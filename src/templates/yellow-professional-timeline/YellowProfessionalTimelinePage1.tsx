@@ -28,7 +28,7 @@ const SidebarSkills = ({ entries, title }: { entries: Skill[]; title: string }) 
   return (
     <section>
       <SectionHeader sidebar title={title} />
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {visible.map((skill) => (
           <SkillBar key={skill.id} compact skill={skill} />
         ))}
@@ -75,24 +75,24 @@ const YellowProfessionalTimelinePage1 = ({
     <article className={pageShellClass}>
       <HeaderWithPhoto personal={page.personal} />
 
-      <div className="mt-5 grid grid-cols-[minmax(0,1fr)_16px_236px] gap-x-4">
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_16px_236px] gap-x-4">
         <main className="min-w-0 pr-1">
           {page.profileSummary ? (
             <section>
               <SectionHeader title={labels.profile} />
-              <p className="text-[10.2px] font-medium leading-[13px] text-neutral-700">
+              <p className="text-[10px] font-medium leading-[12.6px] text-neutral-700">
                 {page.profileSummary}
               </p>
             </section>
           ) : null}
 
           <ExperienceTimeline
-            className="mt-5"
+            className="mt-4"
             entries={page.experience}
             title={labels.experience}
           />
           <EducationSection
-            className="mt-5"
+            className="mt-4"
             entries={page.education}
             title={labels.education}
           />
@@ -103,7 +103,7 @@ const YellowProfessionalTimelinePage1 = ({
         </div>
 
         <aside className="min-w-0">
-          <div className="space-y-5">
+          <div className="space-y-4.5">
             <ContactBlock personal={page.personal} />
             <SidebarSkills entries={page.skills} title={labels.skills} />
             <SidebarSkills entries={page.itSkills} title={labels.itSkills} />

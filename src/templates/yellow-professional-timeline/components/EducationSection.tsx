@@ -58,7 +58,7 @@ const EducationSection = ({
                   {joinParts([entry.school, entry.location])}
                 </p>
               </div>
-              <p className="w-[96px] shrink-0 text-right text-[8.4px] font-black uppercase leading-[10px] text-neutral-500">
+              <p className="w-[132px] shrink-0 whitespace-nowrap text-right text-[8.2px] font-black uppercase leading-[10px] text-neutral-500">
                 {joinParts([entry.startYear, entry.endYear])}
               </p>
             </div>

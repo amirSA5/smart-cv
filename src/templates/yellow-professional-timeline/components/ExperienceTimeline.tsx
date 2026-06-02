@@ -71,7 +71,7 @@ const ExperienceTimeline = ({
                     "mt-1.5 font-medium text-neutral-700",
                     compact
                       ? "space-y-0.5 text-[9.2px] leading-[11.4px]"
-                      : "space-y-0.5 text-[9.7px] leading-[12.2px]",
+                      : "space-y-0.5 text-[9.6px] leading-[11.9px]",
                   ].join(" ")}
                 >
                   {bullets.map((bullet) => (
