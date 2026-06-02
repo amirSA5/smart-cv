@@ -1,5 +1,6 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import type { CVLanguage } from "../types/cv";
 
 const sanitizeFilePart = (value: string) =>
   value
@@ -7,14 +8,16 @@ const sanitizeFilePart = (value: string) =>
     .replace(/[\\/:*?"<>|]+/g, "")
     .replace(/\s+/g, "-");
 
-export const buildPdfFileName = (fullName: string) => {
+export const buildPdfFileName = (fullName: string, language?: CVLanguage) => {
   const name = sanitizeFilePart(fullName) || "CV";
-  return `${name}-CV.pdf`;
+  const suffix = language ? `-${language.toUpperCase()}` : "";
+  return `${name}-CV${suffix}.pdf`;
 };
 
 export const exportCvToPdf = async (
   previewRoot: HTMLElement,
   fullName: string,
+  language?: CVLanguage,
 ) => {
   const pageNodes = Array.from(
     previewRoot.querySelectorAll<HTMLElement>(".cv-page"),
@@ -66,5 +69,5 @@ export const exportCvToPdf = async (
     exportHost.remove();
   }
 
-  pdf.save(buildPdfFileName(fullName));
+  pdf.save(buildPdfFileName(fullName, language));
 };

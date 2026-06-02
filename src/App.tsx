@@ -18,14 +18,14 @@ const App = () => (
             Smart CV Builder
           </p>
           <h1 className="mt-2 break-words text-xl font-black leading-tight tracking-tight text-charcoal sm:text-3xl">
-            Multi-client CV editor and live A4 preview
+            Bilingual CV editor and live A4 preview
           </h1>
         </div>
         <nav className="flex flex-wrap gap-2">
           <NavLink className={navLinkClass} to="/clients">
             Clients
           </NavLink>
-          <NavLink className={navLinkClass} to="/cv/new">
+          <NavLink className={navLinkClass} to="/cv/new?lang=en">
             New CV
           </NavLink>
         </nav>

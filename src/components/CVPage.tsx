@@ -1,4 +1,5 @@
 import type {
+  CVLanguage,
   CVPreviewPage,
   CertificationEntry,
   ContinuationSection,
@@ -8,10 +9,12 @@ import type {
   Skill,
 } from "../types/cv";
 import type { ReactNode } from "react";
+import { cvLabels } from "../constants/cvLabels";
 import SectionTitle from "./SectionTitle";
 
 type CVPageProps = {
   page: CVPreviewPage;
+  language: CVLanguage;
 };
 
 const initials = (name: string) =>
@@ -342,7 +345,16 @@ const getContinuationSection = <T extends ContinuationSection["type"]>(
     section.type === type,
   );
 
-const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "primary" }> }) => (
+const PrimaryPageView = ({
+  language,
+  page,
+}: {
+  language: CVLanguage;
+  page: Extract<CVPreviewPage, { kind: "primary" }>;
+}) => {
+  const labels = cvLabels[language];
+
+  return (
   <article className="cv-page flex flex-col">
     <div className="pointer-events-none absolute -left-[118px] -top-[118px] h-[220px] w-[220px] rounded-full bg-charcoal" />
     <div className="pointer-events-none absolute -bottom-[104px] -right-[104px] h-[190px] w-[190px] rounded-full bg-evergreen" />
@@ -361,7 +373,7 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
           {page.personal.jobTitle || "Professional Title"}
         </p>
         <section className="mt-8">
-          <SectionTitle>Profile</SectionTitle>
+          <SectionTitle>{labels.profile}</SectionTitle>
           <p className="mt-3 whitespace-pre-line text-[13px] leading-[19px] text-ink">
             {page.profileSummary}
           </p>
@@ -372,7 +384,7 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
     <section className="relative z-20 mx-[60px] shrink-0 bg-evergreen px-7 py-5 text-white">
       <div className="flex items-center gap-6">
         <h2 className="shrink-0 text-[23px] font-black uppercase tracking-[0.16em]">
-          Contact Me:
+          {labels.contact}:
         </h2>
         <span className="h-px min-w-[80px] flex-1 bg-white/80" />
       </div>
@@ -388,12 +400,12 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
       <aside className="ml-[60px] flex min-h-0 w-[300px] flex-col overflow-hidden bg-charcoal text-white">
         <div className="space-y-7 px-7 pb-7 pt-10">
           {page.skills.length > 0 ? (
-            <SidebarSection title="Skills">
+            <SidebarSection title={labels.skills}>
               <SkillsBlock entries={page.skills} />
             </SidebarSection>
           ) : null}
           {page.education.length > 0 ? (
-            <SidebarSection title="Education">
+            <SidebarSection title={labels.education}>
               <EducationBlock entries={page.education} showDescription={false} />
             </SidebarSection>
           ) : null}
@@ -403,7 +415,7 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
           <DotGrid light />
           {page.languages.length > 0 ? (
             <div className="mt-6">
-              <SidebarSection title="Languages">
+              <SidebarSection title={labels.languages}>
                 <LanguagesBlock entries={page.languages} />
               </SidebarSection>
             </div>
@@ -414,7 +426,7 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
       <main className="min-h-0 overflow-hidden px-11 pb-[170px] pt-10">
         {page.experience.length > 0 ? (
           <section className="break-inside-avoid">
-            <SectionTitle>Experience</SectionTitle>
+            <SectionTitle>{labels.experience}</SectionTitle>
             <div className="mt-5">
               <ExperienceBlock entries={page.experience} />
             </div>
@@ -422,7 +434,7 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
         ) : null}
         {page.certifications.length > 0 ? (
           <section className="mt-7 break-inside-avoid">
-            <SectionTitle compact>Certifications</SectionTitle>
+            <SectionTitle compact>{labels.certifications}</SectionTitle>
             <div className="mt-4">
               <CertificationsBlock entries={page.certifications} />
             </div>
@@ -431,13 +443,17 @@ const PrimaryPageView = ({ page }: { page: Extract<CVPreviewPage, { kind: "prima
       </main>
     </div>
   </article>
-);
+  );
+};
 
 const ContinuationPageView = ({
+  language,
   page,
 }: {
+  language: CVLanguage;
   page: Extract<CVPreviewPage, { kind: "continuation" }>;
 }) => {
+  const labels = cvLabels[language];
   const experience = getContinuationSection(page.sections, "experience");
   const certifications = getContinuationSection(page.sections, "certifications");
   const education = getContinuationSection(page.sections, "education");
@@ -469,7 +485,7 @@ const ContinuationPageView = ({
           <div className="space-y-4">
             {experience ? (
               <section className="break-inside-avoid">
-                <SectionTitle compact>Experience Continued</SectionTitle>
+                <SectionTitle compact>{labels.experienceContinued}</SectionTitle>
                 <div className="mt-2.5">
                   <ExperienceBlock entries={experience.entries} compact />
                 </div>
@@ -478,7 +494,7 @@ const ContinuationPageView = ({
 
             {certifications ? (
               <section className="break-inside-avoid">
-                <SectionTitle compact>Certifications</SectionTitle>
+                <SectionTitle compact>{labels.certifications}</SectionTitle>
                 <div className="mt-2.5">
                   <CertificationsBlock entries={certifications.entries} compact columns />
                 </div>
@@ -488,7 +504,7 @@ const ContinuationPageView = ({
             <div className="grid grid-cols-[1.25fr_0.85fr] gap-7">
               {education ? (
                 <section className="break-inside-avoid">
-                  <SectionTitle compact>Education</SectionTitle>
+                  <SectionTitle compact>{labels.education}</SectionTitle>
                   <div className="mt-2.5">
                     <EducationBlock entries={education.entries} light={false} compact />
                   </div>
@@ -496,7 +512,7 @@ const ContinuationPageView = ({
               ) : null}
               {languages ? (
                 <section className="break-inside-avoid">
-                  <SectionTitle compact>Languages</SectionTitle>
+                  <SectionTitle compact>{labels.languages}</SectionTitle>
                   <div className="mt-2.5">
                     <LanguagesBlock entries={languages.entries} light={false} compact />
                   </div>
@@ -506,7 +522,7 @@ const ContinuationPageView = ({
 
             {skills ? (
               <section className="break-inside-avoid">
-                <SectionTitle compact>Skills</SectionTitle>
+                <SectionTitle compact>{labels.skills}</SectionTitle>
                 <div className="mt-3 grid grid-cols-2 gap-x-6">
                   <SkillsBlock entries={skills.entries} light={false} compact />
                 </div>
@@ -521,12 +537,12 @@ const ContinuationPageView = ({
   );
 };
 
-const CVPage = ({ page }: CVPageProps) => {
+const CVPage = ({ language, page }: CVPageProps) => {
   if (page.kind === "primary") {
-    return <PrimaryPageView page={page} />;
+    return <PrimaryPageView language={language} page={page} />;
   }
 
-  return <ContinuationPageView page={page} />;
+  return <ContinuationPageView language={language} page={page} />;
 };
 
 export default CVPage;

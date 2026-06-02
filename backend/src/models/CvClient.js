@@ -47,6 +47,24 @@ const languageSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const cvVersionSchema = new mongoose.Schema(
+  {
+    language: {
+      type: String,
+      enum: ["en", "fr"],
+      required: true,
+    },
+    jobTitle: { type: String, default: "" },
+    profile: { type: String, default: "" },
+    skills: { type: [String], default: [] },
+    experiences: { type: [experienceSchema], default: [] },
+    education: { type: [educationSchema], default: [] },
+    certifications: { type: [certificationSchema], default: [] },
+    languages: { type: [languageSchema], default: [] },
+  },
+  { _id: false },
+);
+
 const cvClientSchema = new mongoose.Schema(
   {
     fullName: {
@@ -54,7 +72,7 @@ const cvClientSchema = new mongoose.Schema(
       required: [true, "Full name is required."],
       trim: true,
     },
-    jobTitle: { type: String, default: "" },
+    mainJobTitle: { type: String, default: "" },
     email: {
       type: String,
       default: "",
@@ -70,12 +88,10 @@ const cvClientSchema = new mongoose.Schema(
     location: { type: String, default: "" },
     website: { type: String, default: "" },
     photoUrl: { type: String, default: "" },
-    profile: { type: String, default: "" },
-    skills: { type: [String], default: [] },
-    experiences: { type: [experienceSchema], default: [] },
-    education: { type: [educationSchema], default: [] },
-    certifications: { type: [certificationSchema], default: [] },
-    languages: { type: [languageSchema], default: [] },
+    versions: {
+      en: { type: cvVersionSchema, default: undefined },
+      fr: { type: cvVersionSchema, default: undefined },
+    },
     template: {
       name: { type: String, default: "modern-sidebar" },
       color: { type: String, default: "#2f574d" },

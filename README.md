@@ -1,6 +1,6 @@
 # Smart CV Builder
 
-A React CV builder with a MongoDB-backed client database. Users can create, edit, list, search, duplicate, delete, preview, and download CVs while keeping the approved two-page resume template and PDF export.
+A React CV builder with a MongoDB-backed client database. Users can create, edit, list, search, duplicate, delete, preview, and download English and French CV versions for the same client while keeping the approved two-page resume template and PDF export.
 
 ## Features
 
@@ -9,7 +9,10 @@ A React CV builder with a MongoDB-backed client database. Users can create, edit
 - Tailwind CSS dashboard and A4 resume styling
 - `react-hook-form` editor with dynamic skills, education, experience, languages, and certifications
 - Axios API service for database persistence
-- Client list with search, duplicate, delete confirmation, and PDF download
+- One client record with shared contact details and `versions.en` / `versions.fr`
+- Client list with search, language status, duplicate, delete confirmation, and language-specific PDF download
+- English/French editor and preview switcher
+- Clone workflow to prepare French from English or English from French without fake translation
 - Optional import of old localStorage CV data into MongoDB
 - Fixed A4 preview and PDF export with `html2canvas` and `jsPDF`
 - Two-page CV support with safe margins and readable continuation sections
@@ -60,9 +63,9 @@ http://localhost:5000/api/cv-clients
 ## App Routes
 
 - `/clients` - list/search all CV clients
-- `/cv/new` - create a new CV client
-- `/cv/edit/:id` - edit an existing CV client
-- `/cv/preview/:id` - preview and download one client CV
+- `/cv/new?lang=en` - create a new CV client in a selected language
+- `/cv/edit/:id?lang=en` - edit one language version of an existing client
+- `/cv/preview/:id?lang=fr` - preview and download one language version
 
 ## API Routes
 
@@ -72,6 +75,11 @@ http://localhost:5000/api/cv-clients
 - `PUT /api/cv-clients/:id`
 - `DELETE /api/cv-clients/:id`
 - `POST /api/cv-clients/:id/duplicate`
+- `GET /api/cv-clients/:id/versions/:lang`
+- `PUT /api/cv-clients/:id/versions/:lang`
+- `POST /api/cv-clients/:id/versions/:fromLang/clone/:toLang`
+
+`lang`, `fromLang`, and `toLang` must be `en` or `fr`.
 
 ## Build
 
@@ -82,6 +90,8 @@ npm run build
 ## Notes
 
 - The approved CV template is unchanged: dark sidebar, contact band, image frame, section titles, and two-page support remain.
+- Shared client fields stay outside versions: full name, email, phone, location, website, and photo URL.
+- Language-specific fields stay inside each version: job title, profile, skills, experience, education, certifications, and languages.
 - The preview uses fixed A4 page nodes (`794px x 1123px`) scaled responsively so the downloaded PDF matches the visible preview.
-- PDF files are named `FullName-CV.pdf`.
+- PDF files are named `FullName-CV-EN.pdf` or `FullName-CV-FR.pdf`.
 - `backend/.env` must contain a real MongoDB URI before backend CRUD routes can be tested.

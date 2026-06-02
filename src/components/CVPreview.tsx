@@ -6,12 +6,13 @@ import {
   useRef,
   useState,
 } from "react";
-import type { CVData } from "../types/cv";
+import type { CVData, CVLanguage } from "../types/cv";
 import { paginateCv } from "../utils/pagination";
 import CVPage from "./CVPage";
 
 type CVPreviewProps = {
   data: CVData;
+  language?: CVLanguage;
 };
 
 const PAGE_WIDTH = 794;
@@ -19,7 +20,8 @@ const PAGE_HEIGHT = 1123;
 const PAGE_LABEL_HEIGHT = 24;
 const PAGE_GAP = 32;
 
-const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, ref) => {
+const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(
+  ({ data, language = "en" }, ref) => {
   const pages = useMemo(() => paginateCv(data), [data]);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -70,7 +72,7 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, ref) => 
               <div className="mb-2 h-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
                 Page {page.pageNumber} of {pages.length}
               </div>
-              <CVPage page={page} />
+              <CVPage language={language} page={page} />
             </div>
           ))}
         </div>
@@ -82,7 +84,8 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, ref) => 
       ) : null}
     </div>
   );
-});
+  },
+);
 
 CVPreview.displayName = "CVPreview";
 

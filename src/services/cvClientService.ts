@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { CvClient, CvClientPayload } from "../types/cv";
+import type {
+  CVLanguage,
+  CvClient,
+  CvClientPayload,
+  CvLanguageVersion,
+  CvSharedClientPayload,
+} from "../types/cv";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api";
@@ -40,6 +46,40 @@ export const deleteCvClient = async (id: string) => {
 
 export const duplicateCvClient = async (id: string) => {
   const response = await api.post<CvClient>(`/cv-clients/${id}/duplicate`);
+  return response.data;
+};
+
+export const getCvClientVersion = async (id: string, language: CVLanguage) => {
+  const response = await api.get<CvLanguageVersion>(
+    `/cv-clients/${id}/versions/${language}`,
+  );
+  return response.data;
+};
+
+export const updateCvClientVersion = async (
+  id: string,
+  language: CVLanguage,
+  version: CvLanguageVersion,
+  shared: CvSharedClientPayload,
+) => {
+  const response = await api.put<CvClient>(
+    `/cv-clients/${id}/versions/${language}`,
+    {
+      ...shared,
+      version,
+    },
+  );
+  return response.data;
+};
+
+export const cloneCvClientVersion = async (
+  id: string,
+  fromLanguage: CVLanguage,
+  toLanguage: CVLanguage,
+) => {
+  const response = await api.post<CvClient>(
+    `/cv-clients/${id}/versions/${fromLanguage}/clone/${toLanguage}`,
+  );
   return response.data;
 };
 

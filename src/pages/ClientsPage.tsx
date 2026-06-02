@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CVPreview from "../components/CVPreview";
 import {
+  cloneCvClientVersion,
   createCvClient,
   deleteCvClient,
   duplicateCvClient,
   getApiErrorMessage,
   getCvClients,
 } from "../services/cvClientService";
-import type { CVData, CvClient } from "../types/cv";
+import type { CVData, CVLanguage, CvClient } from "../types/cv";
 import { clearSavedCv, loadCv } from "../utils/localStorage";
-import { cvClientToCvData, cvDataToClientPayload } from "../utils/cvClientMapper";
+import {
+  cvClientToCvData,
+  cvDataToClientPayload,
+  getDisplayJobTitle,
+  getOppositeLanguage,
+  hasLanguageVersion,
+  languageCodeLabels,
+} from "../utils/cvClientMapper";
 import { exportCvToPdf } from "../utils/pdfExport";
+
+const languages: CVLanguage[] = ["en", "fr"];
 
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat("en", {
@@ -21,6 +31,7 @@ const formatDate = (value: string) =>
   }).format(new Date(value));
 
 const ClientsPage = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState<CvClient[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -32,6 +43,7 @@ const ClientsPage = () => {
   const [downloadData, setDownloadData] = useState<{
     cv: CVData;
     fullName: string;
+    language: CVLanguage;
   } | null>(null);
   const downloadRef = useRef<HTMLDivElement | null>(null);
 
@@ -64,8 +76,12 @@ const ClientsPage = () => {
 
       if (!cancelled && downloadRef.current) {
         try {
-          await exportCvToPdf(downloadRef.current, downloadData.fullName);
-          setMessage("PDF downloaded.");
+          await exportCvToPdf(
+            downloadRef.current,
+            downloadData.fullName,
+            downloadData.language,
+          );
+          setMessage(`${languageCodeLabels[downloadData.language]} PDF downloaded.`);
         } catch (downloadError) {
           setError(
             downloadError instanceof Error
@@ -94,12 +110,24 @@ const ClientsPage = () => {
     }
 
     return clients.filter((client) =>
-      [client.fullName, client.jobTitle, client.email, client.phone]
+      [
+        client.fullName,
+        getDisplayJobTitle(client, "en"),
+        getDisplayJobTitle(client, "fr"),
+        client.email,
+        client.phone,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(search),
     );
   }, [clients, query]);
+
+  const updateClientInList = (updated: CvClient) => {
+    setClients((current) =>
+      current.map((client) => (client._id === updated._id ? updated : client)),
+    );
+  };
 
   const handleDuplicate = async (client: CvClient) => {
     try {
@@ -136,14 +164,48 @@ const ClientsPage = () => {
     }
   };
 
-  const handleDownload = (client: CvClient) => {
-    setBusyId(client._id);
+  const handleDownload = (client: CvClient, language: CVLanguage) => {
+    if (!hasLanguageVersion(client, language)) {
+      setError(`${languageCodeLabels[language]} version does not exist yet.`);
+      return;
+    }
+
+    setBusyId(`${client._id}-${language}`);
     setMessage("Preparing PDF...");
     setError("");
     setDownloadData({
-      cv: cvClientToCvData(client),
+      cv: cvClientToCvData(client, language),
       fullName: client.fullName,
+      language,
     });
+  };
+
+  const handleCreateVersion = async (client: CvClient, language: CVLanguage) => {
+    const sourceLanguage = getOppositeLanguage(language);
+
+    if (!hasLanguageVersion(client, sourceLanguage)) {
+      navigate(`/cv/edit/${client._id}?lang=${language}`);
+      return;
+    }
+
+    try {
+      setBusyId(`${client._id}-${language}`);
+      const updated = await cloneCvClientVersion(
+        client._id,
+        sourceLanguage,
+        language,
+      );
+      updateClientInList(updated);
+      setMessage(
+        `${languageCodeLabels[language]} version created from ${languageCodeLabels[sourceLanguage]}.`,
+      );
+      setError("");
+      navigate(`/cv/edit/${client._id}?lang=${language}`);
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError));
+    } finally {
+      setBusyId("");
+    }
   };
 
   const handleImportLocalCv = async () => {
@@ -157,9 +219,9 @@ const ClientsPage = () => {
 
     try {
       setBusyId("import-local");
-      const imported = await createCvClient(cvDataToClientPayload(localCv));
+      const imported = await createCvClient(cvDataToClientPayload(localCv, "en"));
       setClients((current) => [imported, ...current]);
-      setMessage("Local CV imported into MongoDB.");
+      setMessage("Local CV imported into MongoDB as the English version.");
       setError("");
     } catch (requestError) {
       setError(getApiErrorMessage(requestError));
@@ -182,7 +244,7 @@ const ClientsPage = () => {
             Clients
           </p>
           <h1 className="mt-2 text-2xl font-black text-charcoal sm:text-4xl">
-            CV client database
+            Bilingual CV client database
           </h1>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -205,7 +267,7 @@ const ClientsPage = () => {
               </button>
             </>
           ) : null}
-          <Link className="primary-button text-center" to="/cv/new">
+          <Link className="primary-button text-center" to="/cv/new?lang=en">
             Create New CV
           </Link>
         </div>
@@ -249,6 +311,7 @@ const ClientsPage = () => {
               <thead className="bg-slate-50 text-xs font-black uppercase tracking-[0.16em] text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Client</th>
+                  <th className="px-4 py-3">Versions</th>
                   <th className="px-4 py-3">Contact</th>
                   <th className="px-4 py-3">Updated</th>
                   <th className="px-4 py-3 text-right">Actions</th>
@@ -257,39 +320,78 @@ const ClientsPage = () => {
               <tbody className="divide-y divide-slate-100">
                 {filteredClients.map((client) => (
                   <tr key={client._id}>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 align-top">
                       <p className="font-black text-charcoal">{client.fullName}</p>
-                      <p className="mt-1 text-slate-600">{client.jobTitle}</p>
+                      <p className="mt-1 text-slate-600">
+                        {getDisplayJobTitle(client)}
+                      </p>
                     </td>
-                    <td className="px-4 py-4 text-slate-600">
+                    <td className="px-4 py-4 align-top text-slate-600">
+                      <div className="flex flex-wrap gap-2">
+                        {languages.map((language) => (
+                          <span
+                            key={language}
+                            className={[
+                              "rounded-full px-2.5 py-1 text-xs font-black",
+                              hasLanguageVersion(client, language)
+                                ? "bg-evergreen/10 text-evergreen"
+                                : "bg-slate-100 text-slate-500",
+                            ].join(" ")}
+                          >
+                            {languageCodeLabels[language]}{" "}
+                            {hasLanguageVersion(client, language) ? "✓" : "—"}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top text-slate-600">
                       <p>{client.email || "No email"}</p>
                       <p>{client.phone || "No phone"}</p>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-slate-600">
+                    <td className="whitespace-nowrap px-4 py-4 align-top text-slate-600">
                       {formatDate(client.updatedAt)}
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 align-top">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <Link
-                          className="secondary-button"
-                          to={`/cv/edit/${client._id}`}
-                        >
-                          Edit
-                        </Link>
-                        <Link
-                          className="secondary-button"
-                          to={`/cv/preview/${client._id}`}
-                        >
-                          Preview
-                        </Link>
-                        <button
-                          type="button"
-                          className="secondary-button"
-                          disabled={busyId === client._id}
-                          onClick={() => handleDownload(client)}
-                        >
-                          Download PDF
-                        </button>
+                        {languages.map((language) =>
+                          hasLanguageVersion(client, language) ? (
+                            <div
+                              key={language}
+                              className="flex flex-wrap justify-end gap-2"
+                            >
+                              <Link
+                                className="secondary-button"
+                                to={`/cv/edit/${client._id}?lang=${language}`}
+                              >
+                                Edit {languageCodeLabels[language]}
+                              </Link>
+                              <Link
+                                className="secondary-button"
+                                to={`/cv/preview/${client._id}?lang=${language}`}
+                              >
+                                Preview {languageCodeLabels[language]}
+                              </Link>
+                              <button
+                                type="button"
+                                className="secondary-button"
+                                disabled={busyId === `${client._id}-${language}`}
+                                onClick={() => handleDownload(client, language)}
+                              >
+                                Download {languageCodeLabels[language]}
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              key={language}
+                              type="button"
+                              className="secondary-button"
+                              disabled={busyId === `${client._id}-${language}`}
+                              onClick={() => handleCreateVersion(client, language)}
+                            >
+                              Create {languageCodeLabels[language]}
+                            </button>
+                          ),
+                        )}
                         <button
                           type="button"
                           className="secondary-button"
@@ -350,7 +452,11 @@ const ClientsPage = () => {
           aria-hidden="true"
           className="fixed left-[-10000px] top-0 w-[794px] bg-white"
         >
-          <CVPreview ref={downloadRef} data={downloadData.cv} />
+          <CVPreview
+            ref={downloadRef}
+            data={downloadData.cv}
+            language={downloadData.language}
+          />
         </div>
       ) : null}
     </main>

@@ -67,14 +67,11 @@ export type CVData = {
   certifications: CertificationEntry[];
 };
 
-export type CvClientPayload = {
-  fullName: string;
+export type CVLanguage = "en" | "fr";
+
+export type CvLanguageVersion = {
+  language: CVLanguage;
   jobTitle: string;
-  email: string;
-  phone: string;
-  location: string;
-  website: string;
-  photoUrl: string;
   profile: string;
   skills: string[];
   experiences: {
@@ -106,10 +103,24 @@ export type CvClientPayload = {
     name: string;
     level: string;
   }[];
+};
+
+export type CvSharedClientPayload = {
+  fullName: string;
+  mainJobTitle: string;
+  email: string;
+  phone: string;
+  location: string;
+  website: string;
+  photoUrl: string;
   template: {
     name: string;
     color: string;
   };
+};
+
+export type CvClientPayload = CvSharedClientPayload & {
+  versions: Partial<Record<CVLanguage, CvLanguageVersion>>;
 };
 
 export type CvClient = CvClientPayload & {

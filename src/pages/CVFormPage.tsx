@@ -1,32 +1,47 @@
 import { useEffect, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import CVEditor from "../components/CVEditor";
 import CVPreview from "../components/CVPreview";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import {
+  cloneCvClientVersion,
   createCvClient,
   getApiErrorMessage,
   getCvClientById,
-  updateCvClient,
+  updateCvClientVersion,
 } from "../services/cvClientService";
-import type { CVData } from "../types/cv";
+import type { CVData, CVLanguage, CvClient } from "../types/cv";
 import {
   createNewCvData,
   cvClientToCvData,
   cvDataToClientPayload,
+  cvDataToClientVersion,
+  cvDataToSharedClientPayload,
+  getOppositeLanguage,
+  hasLanguageVersion,
+  isCvLanguage,
+  languageCodeLabels,
 } from "../utils/cvClientMapper";
 import { exportCvToPdf } from "../utils/pdfExport";
 
+const getLanguageFromSearch = (value: string | null): CVLanguage =>
+  isCvLanguage(value) ? value : "en";
+
 const CVFormPage = () => {
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const selectedLanguage = getLanguageFromSearch(searchParams.get("lang"));
   const methods = useForm<CVData>({
     defaultValues: createNewCvData(),
     mode: "onChange",
   });
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const [client, setClient] = useState<CvClient | null>(null);
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
+  const [cloning, setCloning] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -35,6 +50,7 @@ const CVFormPage = () => {
   useEffect(() => {
     if (!id) {
       methods.reset(createNewCvData());
+      setClient(null);
       setLoading(false);
       return;
     }
@@ -43,8 +59,17 @@ const CVFormPage = () => {
       try {
         setLoading(true);
         setError("");
-        const client = await getCvClientById(id);
-        methods.reset(cvClientToCvData(client));
+        const response = await getCvClientById(id);
+        setClient(response);
+        methods.reset(cvClientToCvData(response, selectedLanguage));
+
+        if (!hasLanguageVersion(response, selectedLanguage)) {
+          setMessage(
+            `${languageCodeLabels[selectedLanguage]} version does not exist yet. Save this form or clone from the other language to create it.`,
+          );
+        } else {
+          setMessage("");
+        }
       } catch (requestError) {
         setError(getApiErrorMessage(requestError));
       } finally {
@@ -53,7 +78,15 @@ const CVFormPage = () => {
     };
 
     void loadClient();
-  }, [id, methods]);
+  }, [id, methods, selectedLanguage]);
+
+  const setLanguage = (language: CVLanguage) => {
+    setSearchParams({ lang: language });
+
+    if (client) {
+      methods.reset(cvClientToCvData(client, language));
+    }
+  };
 
   const handleSave = async () => {
     const valid = await methods.trigger();
@@ -66,21 +99,62 @@ const CVFormPage = () => {
     try {
       setSaving(true);
       setError("");
-      const payload = cvDataToClientPayload(methods.getValues());
+      const values = methods.getValues();
       const saved = id
-        ? await updateCvClient(id, payload)
-        : await createCvClient(payload);
+        ? await updateCvClientVersion(
+            id,
+            selectedLanguage,
+            cvDataToClientVersion(values, selectedLanguage),
+            cvDataToSharedClientPayload(values),
+          )
+        : await createCvClient(cvDataToClientPayload(values, selectedLanguage));
 
-      methods.reset(cvClientToCvData(saved));
-      setMessage(id ? "CV client updated." : "CV client created.");
+      setClient(saved);
+      methods.reset(cvClientToCvData(saved, selectedLanguage));
+      setMessage(
+        id
+          ? `${languageCodeLabels[selectedLanguage]} CV version saved.`
+          : `CV client created with ${languageCodeLabels[selectedLanguage]} version.`,
+      );
 
       if (!id) {
-        navigate(`/cv/edit/${saved._id}`, { replace: true });
+        navigate(`/cv/edit/${saved._id}?lang=${selectedLanguage}`, {
+          replace: true,
+        });
       }
     } catch (requestError) {
       setError(getApiErrorMessage(requestError));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCloneLanguage = async () => {
+    if (!id || !client) {
+      return;
+    }
+
+    const targetLanguage = getOppositeLanguage(selectedLanguage);
+
+    if (hasLanguageVersion(client, targetLanguage)) {
+      setMessage(`${languageCodeLabels[targetLanguage]} version already exists.`);
+      return;
+    }
+
+    try {
+      setCloning(true);
+      setError("");
+      const saved = await cloneCvClientVersion(id, selectedLanguage, targetLanguage);
+      setClient(saved);
+      methods.reset(cvClientToCvData(saved, targetLanguage));
+      setSearchParams({ lang: targetLanguage });
+      setMessage(
+        `${languageCodeLabels[targetLanguage]} version prepared from ${languageCodeLabels[selectedLanguage]}. You can now edit it manually.`,
+      );
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError));
+    } finally {
+      setCloning(false);
     }
   };
 
@@ -95,8 +169,12 @@ const CVFormPage = () => {
     try {
       setExporting(true);
       setMessage("Preparing PDF...");
-      await exportCvToPdf(previewRef.current, methods.getValues("personal.fullName"));
-      setMessage("PDF downloaded.");
+      await exportCvToPdf(
+        previewRef.current,
+        methods.getValues("personal.fullName"),
+        selectedLanguage,
+      );
+      setMessage(`${languageCodeLabels[selectedLanguage]} PDF downloaded.`);
     } catch (downloadError) {
       setError(
         downloadError instanceof Error
@@ -120,9 +198,21 @@ const CVFormPage = () => {
               >
                 Back to clients
               </Link>
-              <h1 className="mt-3 text-2xl font-black text-charcoal">
-                {id ? "Edit CV client" : "Create CV client"}
-              </h1>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h1 className="text-2xl font-black text-charcoal">
+                    {id ? "Edit CV client" : "Create CV client"}
+                  </h1>
+                  <p className="mt-1 text-sm font-semibold text-slate-500">
+                    Editing {languageCodeLabels[selectedLanguage]} version
+                  </p>
+                </div>
+                <LanguageSwitcher
+                  disabled={loading || saving || cloning}
+                  value={selectedLanguage}
+                  onChange={setLanguage}
+                />
+              </div>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
@@ -130,7 +220,9 @@ const CVFormPage = () => {
                   disabled={saving || loading}
                   onClick={handleSave}
                 >
-                  {saving ? "Saving..." : "Save to MongoDB"}
+                  {saving
+                    ? "Saving..."
+                    : `Save ${languageCodeLabels[selectedLanguage]}`}
                 </button>
                 <button
                   type="button"
@@ -138,9 +230,28 @@ const CVFormPage = () => {
                   disabled={exporting || loading}
                   onClick={handleDownload}
                 >
-                  {exporting ? "Exporting..." : "Download PDF"}
+                  {exporting
+                    ? "Exporting..."
+                    : `Download ${languageCodeLabels[selectedLanguage]}`}
                 </button>
               </div>
+              {id ? (
+                <button
+                  type="button"
+                  className="secondary-button mt-2 w-full"
+                  disabled={
+                    loading ||
+                    cloning ||
+                    !client ||
+                    !hasLanguageVersion(client, selectedLanguage)
+                  }
+                  onClick={handleCloneLanguage}
+                >
+                  {selectedLanguage === "en"
+                    ? "Prepare French version"
+                    : "Create English version from French"}
+                </button>
+              ) : null}
               {message ? (
                 <p className="mt-4 text-sm font-semibold text-evergreen">
                   {message}
@@ -169,11 +280,15 @@ const CVFormPage = () => {
               Live preview
             </h2>
             <span className="text-xs font-semibold text-slate-500">
-              Responsive A4 preview, max 2 pages
+              {languageCodeLabels[selectedLanguage]} A4 preview, max 2 pages
             </span>
           </div>
           <div className="overflow-hidden rounded-lg bg-white/30 pb-8">
-            <CVPreview ref={previewRef} data={watchedCv} />
+            <CVPreview
+              ref={previewRef}
+              data={watchedCv}
+              language={selectedLanguage}
+            />
           </div>
         </section>
       </main>

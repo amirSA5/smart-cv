@@ -1,16 +1,27 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import CVPreview from "../components/CVPreview";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import { getApiErrorMessage, getCvClientById } from "../services/cvClientService";
-import type { CVData, CvClient } from "../types/cv";
-import { cvClientToCvData } from "../utils/cvClientMapper";
+import type { CVData, CVLanguage, CvClient } from "../types/cv";
+import {
+  cvClientToCvData,
+  getDisplayJobTitle,
+  hasLanguageVersion,
+  isCvLanguage,
+  languageCodeLabels,
+} from "../utils/cvClientMapper";
 import { exportCvToPdf } from "../utils/pdfExport";
+
+const getLanguageFromSearch = (value: string | null): CVLanguage =>
+  isCvLanguage(value) ? value : "en";
 
 const CVPreviewPage = () => {
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedLanguage = getLanguageFromSearch(searchParams.get("lang"));
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [client, setClient] = useState<CvClient | null>(null);
-  const [cvData, setCvData] = useState<CVData | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
@@ -27,9 +38,7 @@ const CVPreviewPage = () => {
       try {
         setLoading(true);
         setError("");
-        const response = await getCvClientById(id);
-        setClient(response);
-        setCvData(cvClientToCvData(response));
+        setClient(await getCvClientById(id));
       } catch (requestError) {
         setError(getApiErrorMessage(requestError));
       } finally {
@@ -40,8 +49,16 @@ const CVPreviewPage = () => {
     void loadClient();
   }, [id]);
 
+  const cvData = useMemo<CVData | null>(() => {
+    if (!client || !hasLanguageVersion(client, selectedLanguage)) {
+      return null;
+    }
+
+    return cvClientToCvData(client, selectedLanguage);
+  }, [client, selectedLanguage]);
+
   const handleDownload = async () => {
-    if (!previewRef.current || !client) {
+    if (!previewRef.current || !client || !cvData) {
       setError("Preview is not ready yet.");
       return;
     }
@@ -49,8 +66,8 @@ const CVPreviewPage = () => {
     try {
       setExporting(true);
       setMessage("Preparing PDF...");
-      await exportCvToPdf(previewRef.current, client.fullName);
-      setMessage("PDF downloaded.");
+      await exportCvToPdf(previewRef.current, client.fullName, selectedLanguage);
+      setMessage(`${languageCodeLabels[selectedLanguage]} PDF downloaded.`);
     } catch (downloadError) {
       setError(
         downloadError instanceof Error
@@ -75,26 +92,38 @@ const CVPreviewPage = () => {
           <h1 className="mt-3 text-2xl font-black text-charcoal">
             {client?.fullName ?? "CV preview"}
           </h1>
-          {client?.jobTitle ? (
+          {client ? (
             <p className="mt-1 text-sm font-semibold text-slate-600">
-              {client.jobTitle}
+              {getDisplayJobTitle(client, selectedLanguage)}
             </p>
           ) : null}
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          {id ? (
-            <Link className="secondary-button text-center" to={`/cv/edit/${id}`}>
-              Edit
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            className="primary-button"
-            disabled={exporting || loading || !cvData}
-            onClick={handleDownload}
-          >
-            {exporting ? "Exporting..." : "Download PDF"}
-          </button>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <LanguageSwitcher
+            disabled={loading || exporting}
+            value={selectedLanguage}
+            onChange={(language) => setSearchParams({ lang: language })}
+          />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {id ? (
+              <Link
+                className="secondary-button text-center"
+                to={`/cv/edit/${id}?lang=${selectedLanguage}`}
+              >
+                Edit {languageCodeLabels[selectedLanguage]}
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              className="primary-button"
+              disabled={exporting || loading || !cvData}
+              onClick={handleDownload}
+            >
+              {exporting
+                ? "Exporting..."
+                : `Download ${languageCodeLabels[selectedLanguage]}`}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -114,8 +143,16 @@ const CVPreviewPage = () => {
           Loading preview...
         </div>
       ) : cvData ? (
-        <CVPreview ref={previewRef} data={cvData} />
-      ) : null}
+        <CVPreview
+          ref={previewRef}
+          data={cvData}
+          language={selectedLanguage}
+        />
+      ) : (
+        <div className="rounded-lg bg-white p-6 text-sm font-semibold text-slate-500">
+          {languageCodeLabels[selectedLanguage]} version does not exist yet.
+        </div>
+      )}
     </main>
   );
 };
