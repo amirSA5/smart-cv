@@ -11,6 +11,7 @@ export type PersonalInfo = {
 export type Skill = {
   id: string;
   name: string;
+  level?: number;
 };
 
 export type EducationEntry = {
@@ -55,6 +56,7 @@ export type CertificationEntry = {
   issueDate?: string;
   expiryDate?: string;
   description?: string;
+  bullets?: BulletPoint[];
 };
 
 export type AchievementEntry = {
@@ -63,7 +65,19 @@ export type AchievementEntry = {
   description: string;
 };
 
-export type CVTemplateId = "modern-sidebar" | "tech-professional";
+export type ReferenceEntry = {
+  id: string;
+  name: string;
+  position: string;
+  company: string;
+  phone: string;
+  email: string;
+};
+
+export type CVTemplateId =
+  | "modern-sidebar"
+  | "tech-professional"
+  | "yellow-professional-timeline";
 
 export type CVTemplateMeta = {
   id: CVTemplateId;
@@ -75,11 +89,13 @@ export type CVData = {
   personal: PersonalInfo;
   profileSummary: string;
   skills: Skill[];
+  itSkills: Skill[];
   education: EducationEntry[];
   experience: ExperienceEntry[];
   languages: LanguageEntry[];
   certifications: CertificationEntry[];
   achievements: AchievementEntry[];
+  references: ReferenceEntry[];
 };
 
 export type CVLanguage = "en" | "fr";
@@ -88,7 +104,17 @@ export type CvLanguageVersion = {
   language: CVLanguage;
   jobTitle: string;
   profile: string;
-  skills: string[];
+  skills: Array<
+    | string
+    | {
+        name: string;
+        level: number;
+      }
+  >;
+  itSkills: {
+    name: string;
+    level: number;
+  }[];
   experiences: {
     jobTitle: string;
     company: string;
@@ -113,6 +139,7 @@ export type CvLanguageVersion = {
     issueDate: string;
     expiryDate: string;
     description: string;
+    bullets: string[];
   }[];
   languages: {
     name: string;
@@ -121,6 +148,13 @@ export type CvLanguageVersion = {
   achievements: {
     title: string;
     description: string;
+  }[];
+  references: {
+    name: string;
+    position: string;
+    company: string;
+    phone: string;
+    email: string;
   }[];
 };
 

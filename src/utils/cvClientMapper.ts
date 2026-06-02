@@ -33,6 +33,45 @@ const cleanList = (items: string[]) =>
 
 const isCurrentRole = (value: string) => /present|current|now/i.test(value);
 
+const normalizeLevel = (value: unknown) => {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return 80;
+  }
+
+  return Math.min(100, Math.max(0, Math.round(number)));
+};
+
+const normalizeSkillPayload = (skill: { name: string; level?: number }) => ({
+  name: skill.name.trim(),
+  level: normalizeLevel(skill.level),
+});
+
+const versionSkillToFormSkill = (
+  skill:
+    | string
+    | {
+        name?: string;
+        level?: number;
+      },
+  prefix: string,
+) => {
+  if (typeof skill === "string") {
+    return {
+      id: createId(prefix),
+      name: skill,
+      level: 80,
+    };
+  }
+
+  return {
+    id: createId(prefix),
+    name: skill.name ?? "",
+    level: normalizeLevel(skill.level),
+  };
+};
+
 export const hasLanguageVersion = (
   client: CvClient | null | undefined,
   language: CVLanguage,
@@ -78,7 +117,12 @@ export const cvDataToClientVersion = (
   language,
   jobTitle: data.personal.jobTitle.trim(),
   profile: data.profileSummary.trim(),
-  skills: cleanList(data.skills.map((skill) => skill.name)),
+  skills: (data.skills ?? [])
+    .map(normalizeSkillPayload)
+    .filter((skill) => skill.name),
+  itSkills: (data.itSkills ?? [])
+    .map(normalizeSkillPayload)
+    .filter((skill) => skill.name),
   experiences: data.experience.map((entry) => ({
     jobTitle: entry.jobTitle.trim(),
     company: entry.company.trim(),
@@ -103,6 +147,7 @@ export const cvDataToClientVersion = (
     issueDate: (entry.issueDate || entry.year).trim(),
     expiryDate: entry.expiryDate?.trim() ?? "",
     description: entry.description?.trim() ?? "",
+    bullets: cleanList((entry.bullets ?? []).map((bullet) => bullet.text)),
   })),
   languages: data.languages.map((entry) => ({
     name: entry.name.trim(),
@@ -111,6 +156,13 @@ export const cvDataToClientVersion = (
   achievements: (data.achievements ?? []).map((entry) => ({
     title: entry.title.trim(),
     description: entry.description.trim(),
+  })),
+  references: (data.references ?? []).map((entry) => ({
+    name: entry.name.trim(),
+    position: entry.position.trim(),
+    company: entry.company.trim(),
+    phone: entry.phone.trim(),
+    email: entry.email.trim(),
   })),
 });
 
@@ -130,11 +182,13 @@ const emptyVersion = (language: CVLanguage): CvLanguageVersion => ({
   jobTitle: "",
   profile: "",
   skills: [],
+  itSkills: [],
   experiences: [],
   education: [],
   certifications: [],
   languages: [],
   achievements: [],
+  references: [],
 });
 
 export const cvClientToCvData = (
@@ -155,10 +209,12 @@ export const cvClientToCvData = (
     },
     profileSummary: version.profile ?? "",
     skills:
-      version.skills?.map((name) => ({
-        id: createId("skill"),
-        name,
-      })) ?? [],
+      version.skills?.map((skill) => versionSkillToFormSkill(skill, "skill")) ??
+      [],
+    itSkills:
+      version.itSkills?.map((skill) =>
+        versionSkillToFormSkill(skill, "it-skill"),
+      ) ?? [],
     education:
       version.education?.map((entry) => ({
         id: createId("education"),
@@ -200,12 +256,26 @@ export const cvClientToCvData = (
         issueDate: entry.issueDate ?? "",
         expiryDate: entry.expiryDate ?? "",
         description: entry.description ?? "",
+        bullets:
+          entry.bullets?.map((text) => ({
+            id: createId("certification-bullet"),
+            text,
+          })) ?? [],
       })) ?? [],
     achievements:
       version.achievements?.map((entry) => ({
         id: createId("achievement"),
         title: entry.title ?? "",
         description: entry.description ?? "",
+      })) ?? [],
+    references:
+      version.references?.map((entry) => ({
+        id: createId("reference"),
+        name: entry.name ?? "",
+        position: entry.position ?? "",
+        company: entry.company ?? "",
+        phone: entry.phone ?? "",
+        email: entry.email ?? "",
       })) ?? [],
   };
 };

@@ -9,6 +9,8 @@ import {
 import { getTemplateMeta } from "../constants/templates";
 import { renderModernSidebarPages } from "../templates/modern-sidebar/ModernSidebarTemplate";
 import { renderTechProfessionalPages } from "../templates/tech-professional/TechProfessionalTemplate";
+import { renderYellowProfessionalTimelinePages } from "../templates/yellow-professional-timeline/YellowProfessionalTimelineTemplate";
+import { isYellowProfessionalTimelineTooLong } from "../templates/yellow-professional-timeline/yellowProfessionalTimelinePagination";
 import type { CVData, CVLanguage, CVTemplateMeta } from "../types/cv";
 
 type CVPreviewProps = {
@@ -27,11 +29,16 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(
     const selectedTemplate = getTemplateMeta(template);
     const pages = useMemo(
       () =>
-        selectedTemplate.id === "tech-professional"
-          ? renderTechProfessionalPages(data, language)
-          : renderModernSidebarPages(data, language),
+        selectedTemplate.id === "yellow-professional-timeline"
+          ? renderYellowProfessionalTimelinePages(data, language)
+          : selectedTemplate.id === "tech-professional"
+            ? renderTechProfessionalPages(data, language)
+            : renderModernSidebarPages(data, language),
       [data, language, selectedTemplate.id],
     );
+    const isTooLong =
+      selectedTemplate.id === "yellow-professional-timeline" &&
+      isYellowProfessionalTimelineTooLong(data);
     const viewportRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [scale, setScale] = useState(1);
@@ -60,6 +67,12 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(
 
     return (
       <div ref={viewportRef} className="w-full">
+        {isTooLong ? (
+          <p className="no-print mb-3 max-w-[794px] rounded-md border border-yellow-400 bg-yellow-50 px-3 py-2 text-center text-xs font-black text-neutral-800 lg:text-left">
+            This CV content is too long for the selected template. Please
+            shorten some sections to keep it within 2 pages.
+          </p>
+        ) : null}
         <div
           className="mx-auto lg:mx-0"
           style={{

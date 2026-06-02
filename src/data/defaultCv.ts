@@ -28,6 +28,7 @@ export const defaultCv: CVData = {
     { id: "skill-creativity", name: "Creativity" },
     { id: "skill-leadership", name: "Leadership" },
   ],
+  itSkills: [],
   education: [
     {
       id: "education-secondary",
@@ -88,6 +89,7 @@ export const defaultCv: CVData = {
         "Built reusable visual systems that improved consistency across print and digital assets.",
     },
   ],
+  references: [],
 };
 
 export const emptyCv: CVData = {
@@ -102,9 +104,11 @@ export const emptyCv: CVData = {
   },
   profileSummary: "",
   skills: [],
+  itSkills: [],
   education: [],
   experience: [],
   languages: [],
   certifications: [],
   achievements: [],
+  references: [],
 };

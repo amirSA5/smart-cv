@@ -15,14 +15,21 @@ const templateCatalog = {
     name: "Tech Professional",
     color: "#111111",
   },
+  "yellow-professional-timeline": {
+    id: "yellow-professional-timeline",
+    name: "Yellow Professional Timeline Template",
+    color: "#f4c430",
+  },
 };
 const versionArrayFields = [
   "skills",
+  "itSkills",
   "experiences",
   "education",
   "certifications",
   "languages",
   "achievements",
+  "references",
 ];
 const sharedFields = [
   "fullName",
@@ -59,26 +66,70 @@ const validateLanguageParam = (response, lang) => {
   return false;
 };
 
+const normalizeLevel = (value) => {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return 80;
+  }
+
+  return Math.min(100, Math.max(0, Math.round(number)));
+};
+
+const normalizeSkill = (skill) => {
+  if (typeof skill === "string") {
+    return {
+      name: skill,
+      level: 80,
+    };
+  }
+
+  return {
+    name: skill?.name ?? "",
+    level: normalizeLevel(skill?.level),
+  };
+};
+
+const normalizeSkills = (skills) =>
+  Array.isArray(skills) ? skills.map(normalizeSkill) : [];
+
+const normalizeCertification = (certification) => ({
+  title: certification?.title ?? "",
+  issuer: certification?.issuer ?? "",
+  reference: certification?.reference ?? "",
+  issueDate: certification?.issueDate ?? "",
+  expiryDate: certification?.expiryDate ?? "",
+  description: certification?.description ?? "",
+  bullets: Array.isArray(certification?.bullets)
+    ? certification.bullets
+    : [],
+});
+
 const normalizeVersion = (version, lang) => ({
   language: lang,
   jobTitle: version?.jobTitle ?? "",
   profile: version?.profile ?? "",
-  skills: Array.isArray(version?.skills) ? version.skills : [],
+  skills: normalizeSkills(version?.skills),
+  itSkills: normalizeSkills(version?.itSkills),
   experiences: Array.isArray(version?.experiences) ? version.experiences : [],
   education: Array.isArray(version?.education) ? version.education : [],
   certifications: Array.isArray(version?.certifications)
-    ? version.certifications
+    ? version.certifications.map(normalizeCertification)
     : [],
   languages: Array.isArray(version?.languages) ? version.languages : [],
   achievements: Array.isArray(version?.achievements)
     ? version.achievements
     : [],
+  references: Array.isArray(version?.references) ? version.references : [],
 });
 
 const normalizeTemplate = (template) => {
   const legacyName = template?.name;
   const requestedId =
     template?.id ??
+    (legacyName === "yellow-professional-timeline"
+      ? "yellow-professional-timeline"
+      : undefined) ??
     (legacyName === "tech-professional" ? "tech-professional" : undefined) ??
     (legacyName === "modern-sidebar" ? "modern-sidebar" : undefined);
   const id =
@@ -113,11 +164,13 @@ const normalizeVersions = (body) => {
     body.jobTitle ||
     body.profile ||
     body.skills ||
+    body.itSkills ||
     body.experiences ||
     body.education ||
     body.certifications ||
     body.languages ||
-    body.achievements;
+    body.achievements ||
+    body.references;
 
   if (!legacyHasCvContent) {
     return versions;
@@ -129,11 +182,13 @@ const normalizeVersions = (body) => {
         jobTitle: body.jobTitle,
         profile: body.profile,
         skills: body.skills,
+        itSkills: body.itSkills,
         experiences: body.experiences,
         education: body.education,
         certifications: body.certifications,
         languages: body.languages,
         achievements: body.achievements,
+        references: body.references,
       },
       "en",
     ),
@@ -167,6 +222,24 @@ const validateVersionPayload = (version, lang) => {
     if (field in version && !Array.isArray(version[field])) {
       errors.push(`${field} must be an array.`);
     }
+  });
+
+  ["skills", "itSkills"].forEach((field) => {
+    if (!Array.isArray(version[field])) {
+      return;
+    }
+
+    version[field].forEach((skill, index) => {
+      if (typeof skill === "string" || skill?.level === undefined) {
+        return;
+      }
+
+      const level = Number(skill.level);
+
+      if (!Number.isFinite(level) || level < 0 || level > 100) {
+        errors.push(`${field}.${index}.level must be between 0 and 100.`);
+      }
+    });
   });
 
   return errors;

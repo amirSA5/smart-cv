@@ -7,11 +7,11 @@ A React CV builder with a MongoDB-backed client database. Users can create, edit
 - React + Vite + TypeScript frontend
 - Node.js + Express + MongoDB + Mongoose backend
 - Tailwind CSS dashboard and A4 resume styling
-- `react-hook-form` editor with dynamic skills, education, experience, achievements, languages, and certifications
+- `react-hook-form` editor with dynamic skills, IT skills, education, experience, achievements, references, languages, and certifications
 - Axios API service for database persistence
 - One client record with shared contact details and `versions.en` / `versions.fr`
 - Template selection before creating a CV
-- Two templates: Modern Sidebar and Tech Professional
+- Three templates: Modern Sidebar, Tech Professional, and Yellow Professional Timeline
 - Client list with search, language status, duplicate, delete confirmation, and language-specific PDF download
 - English/French editor and preview switcher
 - Clone workflow to prepare French from English or English from French without fake translation
@@ -68,6 +68,7 @@ http://localhost:5000/api/cv-clients
 - `/templates` - choose a CV template before creating a client
 - `/cv/new?template=modern-sidebar&lang=en` - create a new CV with the existing sidebar template
 - `/cv/new?template=tech-professional&lang=en` - create a new CV with the white/black Tech Professional template
+- `/cv/new?template=yellow-professional-timeline&lang=en` - create a new CV with the black/yellow timeline template
 - `/cv/edit/:id?lang=en` - edit one language version of an existing client
 - `/cv/preview/:id?lang=fr` - preview and download one language version
 
@@ -96,8 +97,11 @@ npm run build
 - Existing clients without a `template.id` are treated as `modern-sidebar`.
 - The approved Modern Sidebar template is unchanged: dark sidebar, contact band, image frame, section titles, and two-page support remain.
 - The Tech Professional template uses a white background, black typography, horizontal contact line, clean dividers, and maps skills to Area of Expertise, achievements to Key Achievements, and certifications/languages to Additional Information.
+- The Yellow Professional Timeline template uses black typography, yellow accents, a right-side profile/contact column, timeline experience markers, progress-style skills, and optional references.
+- The Yellow Professional Timeline template supports manual skill levels, separate IT skills, compact references, and certification bullet points.
 - Shared client fields stay outside versions: full name, email, phone, location, website, and photo URL.
-- Language-specific fields stay inside each version: job title, profile, skills, experience, education, achievements, certifications, and languages.
+- Language-specific fields stay inside each version: job title, profile, skills, IT skills, experience, education, achievements, references, certifications, and languages.
+- The Yellow Professional Timeline template is capped at two pages and shows a warning when the selected content is too long for that template.
 - The preview uses fixed A4 page nodes (`794px x 1123px`) scaled responsively so the downloaded PDF matches the visible preview.
 - PDF files are named `FullName-CV-EN.pdf` or `FullName-CV-FR.pdf`.
 - `backend/.env` must contain a real MongoDB URI before backend CRUD routes can be tested.

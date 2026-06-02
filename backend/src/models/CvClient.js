@@ -15,6 +15,14 @@ const experienceSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const skillSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    level: { type: Number, default: 80, min: 0, max: 100 },
+  },
+  { _id: false },
+);
+
 const educationSchema = new mongoose.Schema(
   {
     degree: { type: String, default: "" },
@@ -35,6 +43,7 @@ const certificationSchema = new mongoose.Schema(
     issueDate: { type: String, default: "" },
     expiryDate: { type: String, default: "" },
     description: { type: String, default: "" },
+    bullets: { type: [String], default: [] },
   },
   { _id: false },
 );
@@ -55,6 +64,17 @@ const achievementSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const referenceSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    position: { type: String, default: "" },
+    company: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    email: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const cvVersionSchema = new mongoose.Schema(
   {
     language: {
@@ -64,12 +84,14 @@ const cvVersionSchema = new mongoose.Schema(
     },
     jobTitle: { type: String, default: "" },
     profile: { type: String, default: "" },
-    skills: { type: [String], default: [] },
+    skills: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    itSkills: { type: [skillSchema], default: [] },
     experiences: { type: [experienceSchema], default: [] },
     education: { type: [educationSchema], default: [] },
     certifications: { type: [certificationSchema], default: [] },
     languages: { type: [languageSchema], default: [] },
     achievements: { type: [achievementSchema], default: [] },
+    references: { type: [referenceSchema], default: [] },
   },
   { _id: false },
 );
@@ -104,7 +126,11 @@ const cvClientSchema = new mongoose.Schema(
     template: {
       id: {
         type: String,
-        enum: ["modern-sidebar", "tech-professional"],
+        enum: [
+          "modern-sidebar",
+          "tech-professional",
+          "yellow-professional-timeline",
+        ],
         default: "modern-sidebar",
       },
       name: { type: String, default: "Modern Sidebar" },

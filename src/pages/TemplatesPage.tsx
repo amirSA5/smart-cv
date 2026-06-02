@@ -65,15 +65,64 @@ const TechProfessionalMockup = () => (
   </div>
 );
 
+const YellowProfessionalTimelineMockup = () => (
+  <div className="aspect-[210/297] w-full overflow-hidden rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="grid h-full grid-cols-[1fr_0.42fr] gap-3">
+      <div>
+        <div className="h-6 w-36 bg-black" />
+        <div className="mt-2 h-2 w-24 bg-yellow-400" />
+        <div className="mt-4 h-1 w-full bg-black" />
+        <div className="mt-5 space-y-4">
+          <div>
+            <div className="h-2 w-20 bg-black" />
+            <div className="mt-2 h-2 w-full bg-neutral-200" />
+            <div className="mt-1 h-2 w-10/12 bg-neutral-200" />
+          </div>
+          <div>
+            <div className="h-2 w-24 bg-black" />
+            <div className="relative mt-3 border-l-2 border-yellow-400 pl-4">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="relative mb-4">
+                  <span className="absolute -left-[22px] top-1 h-3 w-3 rounded-full border-2 border-black bg-yellow-400" />
+                  <div className="h-2 w-24 bg-black" />
+                  <div className="mt-1 h-2 w-full bg-neutral-200" />
+                  <div className="mt-1 h-2 w-9/12 bg-neutral-200" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="relative border-l-4 border-yellow-400 pl-3">
+        <div className="mb-4 h-16 w-16 rounded-full bg-neutral-200" />
+        <div className="space-y-2">
+          <div className="h-2 w-16 bg-black" />
+          <div className="h-2 w-full bg-neutral-200" />
+          <div className="h-2 w-10/12 bg-neutral-200" />
+        </div>
+        <div className="mt-5 space-y-2">
+          <div className="h-2 w-14 bg-black" />
+          <div className="h-2 w-full bg-yellow-400" />
+          <div className="h-2 w-9/12 bg-yellow-400" />
+          <div className="h-2 w-10/12 bg-yellow-400" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const mockups: Record<CVTemplateId, ReactElement> = {
   "modern-sidebar": <ModernSidebarMockup />,
   "tech-professional": <TechProfessionalMockup />,
+  "yellow-professional-timeline": <YellowProfessionalTimelineMockup />,
 };
 
 const descriptions: Record<CVTemplateId, string> = {
   "modern-sidebar": "The existing dark green and black sidebar CV template.",
   "tech-professional":
     "A white and black professional resume template with clean section dividers.",
+  "yellow-professional-timeline":
+    "Black, white, and yellow professional resume with timeline experience and right-side profile/contact column.",
 };
 
 const TemplatesPage = () => (
@@ -96,7 +145,7 @@ const TemplatesPage = () => (
       </Link>
     </div>
 
-    <section className="mt-8 grid gap-6 md:grid-cols-2">
+    <section className="mt-8 grid gap-6 md:grid-cols-3">
       {templateOptions.map((template) => (
         <article
           key={template.id}

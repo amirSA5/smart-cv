@@ -13,6 +13,7 @@ import {
   updateCvClientVersion,
 } from "../services/cvClientService";
 import type { CVData, CVLanguage, CvClient } from "../types/cv";
+import { isYellowProfessionalTimelineTooLong } from "../templates/yellow-professional-timeline/yellowProfessionalTimelinePagination";
 import {
   createNewCvData,
   cvClientToCvData,
@@ -53,6 +54,9 @@ const CVFormPage = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const watchedCv = useWatch({ control: methods.control }) as CVData;
+  const yellowTemplateTooLong =
+    selectedTemplate.id === "yellow-professional-timeline" &&
+    isYellowProfessionalTimelineTooLong(watchedCv);
 
   useEffect(() => {
     if (!id) {
@@ -277,6 +281,12 @@ const CVFormPage = () => {
               {error ? (
                 <p className="mt-4 text-sm font-semibold text-red-700">
                   {error}
+                </p>
+              ) : null}
+              {yellowTemplateTooLong ? (
+                <p className="mt-4 rounded-md border border-yellow-400 bg-yellow-50 px-3 py-2 text-sm font-black text-neutral-800">
+                  This CV content is too long for the selected template. Please
+                  shorten some sections to keep it within 2 pages.
                 </p>
               ) : null}
             </div>
