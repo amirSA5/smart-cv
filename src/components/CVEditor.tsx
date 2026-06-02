@@ -1,5 +1,6 @@
 import EducationForm from "./editor/EducationForm";
 import ExperienceForm from "./editor/ExperienceForm";
+import AchievementsForm from "./editor/AchievementsForm";
 import OptionalSectionsForm from "./editor/OptionalSectionsForm";
 import PersonalInfoForm from "./editor/PersonalInfoForm";
 import ProfileForm from "./editor/ProfileForm";
@@ -12,6 +13,7 @@ const CVEditor = () => (
     <SkillsForm />
     <EducationForm />
     <ExperienceForm />
+    <AchievementsForm />
     <OptionalSectionsForm />
   </form>
 );

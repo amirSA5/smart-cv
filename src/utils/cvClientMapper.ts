@@ -1,4 +1,5 @@
 import { createId, defaultCv } from "../data/defaultCv";
+import { defaultTemplate, getTemplateMeta } from "../constants/templates";
 import type {
   CVData,
   CVLanguage,
@@ -6,6 +7,7 @@ import type {
   CvClientPayload,
   CvLanguageVersion,
   CvSharedClientPayload,
+  CVTemplateMeta,
 } from "../types/cv";
 
 export const fallbackLanguage: CVLanguage = "en";
@@ -51,8 +53,13 @@ export const getDisplayJobTitle = (
   client.versions?.fr?.jobTitle ||
   "";
 
+export const getClientTemplate = (
+  client?: Pick<CvClient, "template"> | null,
+): CVTemplateMeta => getTemplateMeta(client?.template);
+
 export const cvDataToSharedClientPayload = (
   data: CVData,
+  template: CVTemplateMeta = defaultTemplate,
 ): CvSharedClientPayload => ({
   fullName: data.personal.fullName.trim() || "Untitled CV",
   mainJobTitle: data.personal.jobTitle.trim(),
@@ -61,10 +68,7 @@ export const cvDataToSharedClientPayload = (
   location: data.personal.location.trim(),
   website: data.personal.website.trim(),
   photoUrl: data.personal.profileImage?.trim() ?? "",
-  template: {
-    name: "modern-sidebar",
-    color: "#2f574d",
-  },
+  template: getTemplateMeta(template),
 });
 
 export const cvDataToClientVersion = (
@@ -104,13 +108,18 @@ export const cvDataToClientVersion = (
     name: entry.name.trim(),
     level: entry.level.trim(),
   })),
+  achievements: (data.achievements ?? []).map((entry) => ({
+    title: entry.title.trim(),
+    description: entry.description.trim(),
+  })),
 });
 
 export const cvDataToClientPayload = (
   data: CVData,
   language: CVLanguage = fallbackLanguage,
+  template: CVTemplateMeta = defaultTemplate,
 ): CvClientPayload => ({
-  ...cvDataToSharedClientPayload(data),
+  ...cvDataToSharedClientPayload(data, template),
   versions: {
     [language]: cvDataToClientVersion(data, language),
   },
@@ -125,6 +134,7 @@ const emptyVersion = (language: CVLanguage): CvLanguageVersion => ({
   education: [],
   certifications: [],
   languages: [],
+  achievements: [],
 });
 
 export const cvClientToCvData = (
@@ -189,6 +199,12 @@ export const cvClientToCvData = (
         reference: entry.reference ?? "",
         issueDate: entry.issueDate ?? "",
         expiryDate: entry.expiryDate ?? "",
+        description: entry.description ?? "",
+      })) ?? [],
+    achievements:
+      version.achievements?.map((entry) => ({
+        id: createId("achievement"),
+        title: entry.title ?? "",
         description: entry.description ?? "",
       })) ?? [],
   };

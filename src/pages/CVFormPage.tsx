@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import CVEditor from "../components/CVEditor";
 import CVPreview from "../components/CVPreview";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { getTemplateMeta, isTemplateId } from "../constants/templates";
 import {
   cloneCvClientVersion,
   createCvClient,
@@ -18,6 +19,7 @@ import {
   cvDataToClientPayload,
   cvDataToClientVersion,
   cvDataToSharedClientPayload,
+  getClientTemplate,
   getOppositeLanguage,
   hasLanguageVersion,
   isCvLanguage,
@@ -28,17 +30,22 @@ import { exportCvToPdf } from "../utils/pdfExport";
 const getLanguageFromSearch = (value: string | null): CVLanguage =>
   isCvLanguage(value) ? value : "en";
 
+const getTemplateFromSearch = (value: string | null) =>
+  getTemplateMeta({ id: isTemplateId(value) ? value : "modern-sidebar" });
+
 const CVFormPage = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const selectedLanguage = getLanguageFromSearch(searchParams.get("lang"));
+  const requestedTemplate = getTemplateFromSearch(searchParams.get("template"));
   const methods = useForm<CVData>({
     defaultValues: createNewCvData(),
     mode: "onChange",
   });
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [client, setClient] = useState<CvClient | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(requestedTemplate);
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
   const [cloning, setCloning] = useState(false);
@@ -51,6 +58,7 @@ const CVFormPage = () => {
     if (!id) {
       methods.reset(createNewCvData());
       setClient(null);
+      setSelectedTemplate(requestedTemplate);
       setLoading(false);
       return;
     }
@@ -61,6 +69,7 @@ const CVFormPage = () => {
         setError("");
         const response = await getCvClientById(id);
         setClient(response);
+        setSelectedTemplate(getClientTemplate(response));
         methods.reset(cvClientToCvData(response, selectedLanguage));
 
         if (!hasLanguageVersion(response, selectedLanguage)) {
@@ -78,10 +87,14 @@ const CVFormPage = () => {
     };
 
     void loadClient();
-  }, [id, methods, selectedLanguage]);
+  }, [id, methods, requestedTemplate.id, selectedLanguage]);
 
   const setLanguage = (language: CVLanguage) => {
-    setSearchParams({ lang: language });
+    setSearchParams(
+      id
+        ? { lang: language }
+        : { template: selectedTemplate.id, lang: language },
+    );
 
     if (client) {
       methods.reset(cvClientToCvData(client, language));
@@ -105,11 +118,14 @@ const CVFormPage = () => {
             id,
             selectedLanguage,
             cvDataToClientVersion(values, selectedLanguage),
-            cvDataToSharedClientPayload(values),
+            cvDataToSharedClientPayload(values, selectedTemplate),
           )
-        : await createCvClient(cvDataToClientPayload(values, selectedLanguage));
+        : await createCvClient(
+            cvDataToClientPayload(values, selectedLanguage, selectedTemplate),
+          );
 
       setClient(saved);
+      setSelectedTemplate(getClientTemplate(saved));
       methods.reset(cvClientToCvData(saved, selectedLanguage));
       setMessage(
         id
@@ -204,7 +220,8 @@ const CVFormPage = () => {
                     {id ? "Edit CV client" : "Create CV client"}
                   </h1>
                   <p className="mt-1 text-sm font-semibold text-slate-500">
-                    Editing {languageCodeLabels[selectedLanguage]} version
+                    Editing {languageCodeLabels[selectedLanguage]} version with{" "}
+                    {selectedTemplate.name}
                   </p>
                 </div>
                 <LanguageSwitcher
@@ -288,6 +305,7 @@ const CVFormPage = () => {
               ref={previewRef}
               data={watchedCv}
               language={selectedLanguage}
+              template={selectedTemplate}
             />
           </div>
         </section>

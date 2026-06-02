@@ -6,6 +6,7 @@ import { getApiErrorMessage, getCvClientById } from "../services/cvClientService
 import type { CVData, CVLanguage, CvClient } from "../types/cv";
 import {
   cvClientToCvData,
+  getClientTemplate,
   getDisplayJobTitle,
   hasLanguageVersion,
   isCvLanguage,
@@ -94,7 +95,8 @@ const CVPreviewPage = () => {
           </h1>
           {client ? (
             <p className="mt-1 text-sm font-semibold text-slate-600">
-              {getDisplayJobTitle(client, selectedLanguage)}
+              {getDisplayJobTitle(client, selectedLanguage)} -{" "}
+              {getClientTemplate(client).name}
             </p>
           ) : null}
         </div>
@@ -147,6 +149,7 @@ const CVPreviewPage = () => {
           ref={previewRef}
           data={cvData}
           language={selectedLanguage}
+          template={getClientTemplate(client)}
         />
       ) : (
         <div className="rounded-lg bg-white p-6 text-sm font-semibold text-slate-500">

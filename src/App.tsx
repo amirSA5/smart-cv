@@ -2,6 +2,7 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import ClientsPage from "./pages/ClientsPage";
 import CVFormPage from "./pages/CVFormPage";
 import CVPreviewPage from "./pages/CVPreviewPage";
+import TemplatesPage from "./pages/TemplatesPage";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
@@ -25,7 +26,7 @@ const App = () => (
           <NavLink className={navLinkClass} to="/clients">
             Clients
           </NavLink>
-          <NavLink className={navLinkClass} to="/cv/new?lang=en">
+          <NavLink className={navLinkClass} to="/templates">
             New CV
           </NavLink>
         </nav>
@@ -35,6 +36,7 @@ const App = () => (
     <Routes>
       <Route path="/" element={<Navigate replace to="/clients" />} />
       <Route path="/clients" element={<ClientsPage />} />
+      <Route path="/templates" element={<TemplatesPage />} />
       <Route path="/cv/new" element={<CVFormPage />} />
       <Route path="/cv/edit/:id" element={<CVFormPage />} />
       <Route path="/cv/preview/:id" element={<CVPreviewPage />} />

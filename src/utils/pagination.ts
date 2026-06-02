@@ -347,6 +347,7 @@ export const paginateCv = (data: CVData): CVPreviewPage[] => {
     languages: [],
     experience: pageOneExperience.fit,
     certifications: pageOneCertifications.fit,
+    achievements: [],
   };
 
   const continuationSections: ContinuationSection[] = [];

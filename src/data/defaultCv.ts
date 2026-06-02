@@ -80,6 +80,14 @@ export const defaultCv: CVData = {
   ],
   languages: [],
   certifications: [],
+  achievements: [
+    {
+      id: "achievement-brand-system",
+      title: "Brand system delivery",
+      description:
+        "Built reusable visual systems that improved consistency across print and digital assets.",
+    },
+  ],
 };
 
 export const emptyCv: CVData = {
@@ -98,4 +106,5 @@ export const emptyCv: CVData = {
   experience: [],
   languages: [],
   certifications: [],
+  achievements: [],
 };

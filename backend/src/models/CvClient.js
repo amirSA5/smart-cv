@@ -47,6 +47,14 @@ const languageSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const achievementSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const cvVersionSchema = new mongoose.Schema(
   {
     language: {
@@ -61,6 +69,7 @@ const cvVersionSchema = new mongoose.Schema(
     education: { type: [educationSchema], default: [] },
     certifications: { type: [certificationSchema], default: [] },
     languages: { type: [languageSchema], default: [] },
+    achievements: { type: [achievementSchema], default: [] },
   },
   { _id: false },
 );
@@ -93,7 +102,12 @@ const cvClientSchema = new mongoose.Schema(
       fr: { type: cvVersionSchema, default: undefined },
     },
     template: {
-      name: { type: String, default: "modern-sidebar" },
+      id: {
+        type: String,
+        enum: ["modern-sidebar", "tech-professional"],
+        default: "modern-sidebar",
+      },
+      name: { type: String, default: "Modern Sidebar" },
       color: { type: String, default: "#2f574d" },
     },
   },

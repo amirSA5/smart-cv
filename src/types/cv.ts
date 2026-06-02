@@ -57,6 +57,20 @@ export type CertificationEntry = {
   description?: string;
 };
 
+export type AchievementEntry = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type CVTemplateId = "modern-sidebar" | "tech-professional";
+
+export type CVTemplateMeta = {
+  id: CVTemplateId;
+  name: string;
+  color?: string;
+};
+
 export type CVData = {
   personal: PersonalInfo;
   profileSummary: string;
@@ -65,6 +79,7 @@ export type CVData = {
   experience: ExperienceEntry[];
   languages: LanguageEntry[];
   certifications: CertificationEntry[];
+  achievements: AchievementEntry[];
 };
 
 export type CVLanguage = "en" | "fr";
@@ -103,6 +118,10 @@ export type CvLanguageVersion = {
     name: string;
     level: string;
   }[];
+  achievements: {
+    title: string;
+    description: string;
+  }[];
 };
 
 export type CvSharedClientPayload = {
@@ -113,10 +132,7 @@ export type CvSharedClientPayload = {
   location: string;
   website: string;
   photoUrl: string;
-  template: {
-    name: string;
-    color: string;
-  };
+  template: CVTemplateMeta;
 };
 
 export type CvClientPayload = CvSharedClientPayload & {
@@ -135,7 +151,8 @@ export type ContinuationSection =
   | { type: "skills"; title: string; entries: Skill[] }
   | { type: "education"; title: string; entries: EducationEntry[] }
   | { type: "languages"; title: string; entries: LanguageEntry[] }
-  | { type: "certifications"; title: string; entries: CertificationEntry[] };
+  | { type: "certifications"; title: string; entries: CertificationEntry[] }
+  | { type: "achievements"; title: string; entries: AchievementEntry[] };
 
 export type PrimaryPage = {
   kind: "primary";
@@ -147,6 +164,7 @@ export type PrimaryPage = {
   experience: ExperienceEntry[];
   languages: LanguageEntry[];
   certifications: CertificationEntry[];
+  achievements: AchievementEntry[];
 };
 
 export type ContinuationPage = {

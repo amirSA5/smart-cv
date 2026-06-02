@@ -4,12 +4,25 @@ import CvClient from "../models/CvClient.js";
 const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const supportedLanguages = ["en", "fr"];
+const templateCatalog = {
+  "modern-sidebar": {
+    id: "modern-sidebar",
+    name: "Modern Sidebar",
+    color: "#2f574d",
+  },
+  "tech-professional": {
+    id: "tech-professional",
+    name: "Tech Professional",
+    color: "#111111",
+  },
+};
 const versionArrayFields = [
   "skills",
   "experiences",
   "education",
   "certifications",
   "languages",
+  "achievements",
 ];
 const sharedFields = [
   "fullName",
@@ -57,7 +70,31 @@ const normalizeVersion = (version, lang) => ({
     ? version.certifications
     : [],
   languages: Array.isArray(version?.languages) ? version.languages : [],
+  achievements: Array.isArray(version?.achievements)
+    ? version.achievements
+    : [],
 });
+
+const normalizeTemplate = (template) => {
+  const legacyName = template?.name;
+  const requestedId =
+    template?.id ??
+    (legacyName === "tech-professional" ? "tech-professional" : undefined) ??
+    (legacyName === "modern-sidebar" ? "modern-sidebar" : undefined);
+  const id =
+    requestedId && templateCatalog[requestedId]
+      ? requestedId
+      : "modern-sidebar";
+  const defaults = templateCatalog[id];
+
+  return {
+    ...defaults,
+    name: template?.name && !templateCatalog[template.name]
+      ? template.name
+      : defaults.name,
+    color: template?.color ?? defaults.color,
+  };
+};
 
 const normalizeVersions = (body) => {
   const versions = {};
@@ -79,7 +116,8 @@ const normalizeVersions = (body) => {
     body.experiences ||
     body.education ||
     body.certifications ||
-    body.languages;
+    body.languages ||
+    body.achievements;
 
   if (!legacyHasCvContent) {
     return versions;
@@ -95,6 +133,7 @@ const normalizeVersions = (body) => {
         education: body.education,
         certifications: body.certifications,
         languages: body.languages,
+        achievements: body.achievements,
       },
       "en",
     ),
@@ -113,10 +152,7 @@ const normalizeClientPayload = (body) => {
     website: body.website ?? "",
     photoUrl: body.photoUrl ?? "",
     versions,
-    template: body.template ?? {
-      name: "modern-sidebar",
-      color: "#2f574d",
-    },
+    template: normalizeTemplate(body.template),
   };
 };
 
@@ -179,6 +215,8 @@ const applySharedFields = (client, body) => {
     client.mainJobTitle =
       client.versions?.en?.jobTitle || client.versions?.fr?.jobTitle || "";
   }
+
+  client.template = normalizeTemplate(client.template);
 };
 
 export const getAllCvClients = async (_request, response) => {

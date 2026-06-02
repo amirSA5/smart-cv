@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CVPreview from "../components/CVPreview";
+import { defaultTemplate } from "../constants/templates";
 import {
   cloneCvClientVersion,
   createCvClient,
@@ -14,6 +15,7 @@ import { clearSavedCv, loadCv } from "../utils/localStorage";
 import {
   cvClientToCvData,
   cvDataToClientPayload,
+  getClientTemplate,
   getDisplayJobTitle,
   getOppositeLanguage,
   hasLanguageVersion,
@@ -44,6 +46,7 @@ const ClientsPage = () => {
     cv: CVData;
     fullName: string;
     language: CVLanguage;
+    template: ReturnType<typeof getClientTemplate>;
   } | null>(null);
   const downloadRef = useRef<HTMLDivElement | null>(null);
 
@@ -177,6 +180,7 @@ const ClientsPage = () => {
       cv: cvClientToCvData(client, language),
       fullName: client.fullName,
       language,
+      template: getClientTemplate(client),
     });
   };
 
@@ -219,7 +223,9 @@ const ClientsPage = () => {
 
     try {
       setBusyId("import-local");
-      const imported = await createCvClient(cvDataToClientPayload(localCv, "en"));
+      const imported = await createCvClient(
+        cvDataToClientPayload(localCv, "en", defaultTemplate),
+      );
       setClients((current) => [imported, ...current]);
       setMessage("Local CV imported into MongoDB as the English version.");
       setError("");
@@ -267,7 +273,7 @@ const ClientsPage = () => {
               </button>
             </>
           ) : null}
-          <Link className="primary-button text-center" to="/cv/new?lang=en">
+          <Link className="primary-button text-center" to="/templates">
             Create New CV
           </Link>
         </div>
@@ -324,6 +330,9 @@ const ClientsPage = () => {
                       <p className="font-black text-charcoal">{client.fullName}</p>
                       <p className="mt-1 text-slate-600">
                         {getDisplayJobTitle(client)}
+                      </p>
+                      <p className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                        Template: {getClientTemplate(client).name}
                       </p>
                     </td>
                     <td className="px-4 py-4 align-top text-slate-600">
@@ -456,6 +465,7 @@ const ClientsPage = () => {
             ref={downloadRef}
             data={downloadData.cv}
             language={downloadData.language}
+            template={downloadData.template}
           />
         </div>
       ) : null}
