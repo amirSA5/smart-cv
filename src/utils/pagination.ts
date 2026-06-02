@@ -11,9 +11,9 @@ import type {
 
 const PAGE_HEIGHT = 1123;
 const PAGE_ONE_TOP_SAFE = 64;
-const PAGE_ONE_BOTTOM_SAFE = 180;
+const PAGE_ONE_BOTTOM_SAFE = 160;
 
-const MAIN_CHARS_PER_LINE = 58;
+const MAIN_CHARS_PER_LINE = 48;
 const COMPACT_CHARS_PER_LINE = 48;
 const SIDEBAR_CHARS_PER_LINE = 28;
 
@@ -130,7 +130,7 @@ const educationSectionHeight = (
 
 const bulletHeight = (bullet: BulletPoint, compact = false) =>
   lineCount(bullet.text, compact ? COMPACT_CHARS_PER_LINE : MAIN_CHARS_PER_LINE) *
-  (compact ? 17 : 21);
+  (compact ? 17 : 18);
 
 const visibleBullets = (entry: ExperienceEntry) =>
   entry.bullets.filter((bullet) => bullet.text.trim());
@@ -143,13 +143,13 @@ const experienceEntryHeightForBullets = (
   const bulletCount = bullets.length;
 
   return (
-    (compact ? 16 : 20) +
-    (compact ? 5 : 8) +
-    lineCount(entry.company, compact ? 52 : 40) * (compact ? 17 : 20) +
-    (compact ? 17 : 20) +
-    (bulletCount > 0 ? (compact ? 5 : 8) : 0) +
+    (compact ? 16 : 18) +
+    (compact ? 5 : 6) +
+    lineCount(entry.company, compact ? 52 : 40) * (compact ? 17 : 18) +
+    (compact ? 17 : 18) +
+    (bulletCount > 0 ? (compact ? 5 : 6) : 0) +
     bullets.reduce((total, bullet) => total + bulletHeight(bullet, compact), 0) +
-    Math.max(0, bulletCount - 1) * (compact ? 4 : 8)
+    Math.max(0, bulletCount - 1) * (compact ? 4 : 6)
   );
 };
 
@@ -217,13 +217,22 @@ const splitExperience = (
   items: ExperienceEntry[],
   budget: number,
   compact = false,
+  maxItems = Number.POSITIVE_INFINITY,
 ): SplitResult<ExperienceEntry> => {
   const fit: ExperienceEntry[] = [];
   let height = 0;
   const sectionBaseHeight = sectionTitleHeight(compact) + (compact ? 12 : 20);
-  const itemGap = compact ? 16 : 24;
+  const itemGap = compact ? 16 : 20;
 
   for (const [entryIndex, entry] of items.entries()) {
+    if (fit.length >= maxItems) {
+      return {
+        fit,
+        remaining: items.slice(entryIndex),
+        height,
+      };
+    }
+
     const prefixHeight = fit.length === 0 ? sectionBaseHeight : itemGap;
     const fullEntryHeight = experienceEntryHeight(entry, compact);
 
@@ -231,58 +240,6 @@ const splitExperience = (
       fit.push(entry);
       height += prefixHeight + fullEntryHeight;
       continue;
-    }
-
-    const bullets = visibleBullets(entry);
-    const availableForEntry = budget - height - prefixHeight;
-
-    if (availableForEntry > 0 && bullets.length > 1) {
-      const partialBullets: BulletPoint[] = [];
-
-      for (const bullet of bullets) {
-        const nextBullets = [...partialBullets, bullet];
-        const nextEntryHeight = experienceEntryHeightForBullets(
-          entry,
-          nextBullets,
-          compact,
-        );
-
-        if (nextEntryHeight > availableForEntry) {
-          break;
-        }
-
-        partialBullets.push(bullet);
-      }
-
-      if (partialBullets.length > 0) {
-        const remainingBulletIds = new Set(
-          partialBullets.map((bullet) => bullet.id),
-        );
-        const remainingBullets = bullets.filter(
-          (bullet) => !remainingBulletIds.has(bullet.id),
-        );
-        const partialEntry: ExperienceEntry = {
-          ...entry,
-          bullets: partialBullets,
-        };
-        const remainingEntry: ExperienceEntry = {
-          ...entry,
-          id: `${entry.id}-continued`,
-          continued: true,
-          bullets: remainingBullets,
-        };
-
-        fit.push(partialEntry);
-        height +=
-          prefixHeight +
-          experienceEntryHeightForBullets(entry, partialBullets, compact);
-
-        return {
-          fit,
-          remaining: [remainingEntry, ...items.slice(entryIndex + 1)],
-          height,
-        };
-      }
     }
 
     return {
@@ -354,20 +311,22 @@ export const paginateCv = (data: CVData): CVPreviewPage[] => {
     compact: false,
     showDescription: false,
   });
-  const sidebarDecorationReserve = 126;
+  const sidebarDecorationReserve = 104;
+  const shortEducationAllowance = data.education.length <= 2 ? 72 : 0;
   const skillsAndEducationHeight =
     fullSkillsHeight +
     (data.education.length > 0 ? 36 + fullEducationHeight : 0) +
     sidebarDecorationReserve;
   const educationFits =
-    data.education.length > 0 && skillsAndEducationHeight <= sidebarBudget;
+    data.education.length > 0 &&
+    skillsAndEducationHeight <= sidebarBudget + shortEducationAllowance;
   const skillBudget = educationFits
     ? sidebarBudget - fullEducationHeight - 36 - sidebarDecorationReserve
     : sidebarBudget - sidebarDecorationReserve;
   const pageOneSkills = splitSkills(data.skills, Math.max(0, skillBudget));
   const pageOneEducation = educationFits ? data.education : [];
 
-  const pageOneExperience = splitExperience(data.experience, mainBudget);
+  const pageOneExperience = splitExperience(data.experience, mainBudget, false, 2);
   const needsContinuation =
     pageOneExperience.remaining.length > 0 ||
     pageOneSkills.remaining.length > 0 ||

@@ -30,10 +30,12 @@ const BulletList = ({
   items,
   light = false,
   compact = false,
+  dense = false,
 }: {
   items: string[];
   light?: boolean;
   compact?: boolean;
+  dense?: boolean;
 }) => (
   <ul
     className={[
@@ -49,13 +51,17 @@ const BulletList = ({
           key={`${item}-${index}`}
           className={[
             "grid grid-cols-[8px_1fr] gap-3",
-            compact ? "text-[10.5px] leading-[14px]" : "text-[14px] leading-[21px]",
+            compact
+              ? "text-[9.8px] leading-[12.8px]"
+              : dense
+                ? "text-[13px] leading-[18px]"
+                : "text-[14px] leading-[21px]",
           ].join(" ")}
         >
           <span
             className={[
               "rounded-full bg-current",
-              compact ? "mt-[5px]" : "mt-[7px]",
+              compact ? "mt-[4.5px]" : dense ? "mt-[6px]" : "mt-[7px]",
               compact ? "h-1 w-1" : "h-1.5 w-1.5",
             ].join(" ")}
           />
@@ -136,32 +142,32 @@ const EducationBlock = ({
   showDescription?: boolean;
   compact?: boolean;
 }) => (
-  <div className={compact ? "space-y-2.5" : "space-y-5"}>
+  <div className={compact ? "space-y-1.5" : "space-y-5"}>
     {entries.map((entry) => (
       <article key={entry.id} className={light ? "text-white" : "text-ink"}>
         <h3
           className={[
             "font-black uppercase tracking-[0.12em]",
-            compact ? "text-[9.5px] leading-[13px]" : "text-[13px] leading-5",
+            compact ? "text-[9px] leading-[11.8px]" : "text-[13px] leading-5",
           ].join(" ")}
         >
           {entry.degree}
         </h3>
         <p
           className={[
-            compact ? "mt-0.5 text-[10.5px] leading-[14px]" : "mt-2 text-[14px] leading-5",
+            compact ? "mt-0.5 text-[9.7px] leading-[12.8px]" : "mt-2 text-[14px] leading-5",
           ].join(" ")}
         >
           {[entry.school, entry.location].filter(Boolean).join(" - ")}
         </p>
-        <p className={compact ? "text-[10.5px] leading-[14px]" : "text-[14px] leading-5"}>
+        <p className={compact ? "text-[9.7px] leading-[12.8px]" : "text-[14px] leading-5"}>
           {[entry.startYear, entry.endYear].filter(Boolean).join(" - ")}
         </p>
         {showDescription && entry.description ? (
           <p
             className={[
               "opacity-85",
-              compact ? "mt-0.5 text-[9.5px] leading-[13px]" : "mt-2 text-[12px] leading-[18px]",
+              compact ? "mt-0.5 text-[9px] leading-[11.8px]" : "mt-2 text-[12px] leading-[18px]",
             ].join(" ")}
           >
             {entry.description}
@@ -179,31 +185,35 @@ const ExperienceBlock = ({
   entries: ExperienceEntry[];
   compact?: boolean;
 }) => (
-  <div className={compact ? "space-y-2.5" : "space-y-6"}>
+  <div className={compact ? "space-y-1.5" : "space-y-5"}>
     {entries.map((entry) => (
       <article key={`${entry.id}-${entry.continued ? "continued" : "main"}`}>
         <h3
           className={[
             "font-black uppercase tracking-[0.13em]",
-            compact ? "text-[9.5px] leading-[13px]" : "text-[13px] leading-5",
+            compact ? "text-[9px] leading-[11.8px]" : "text-[12.5px] leading-[18px]",
           ].join(" ")}
         >
           {entry.jobTitle}
         </h3>
         <p
           className={[
-            compact ? "mt-0.5 text-[10.5px] leading-[14px]" : "mt-2 text-[14px] leading-5",
+            compact ? "mt-0.5 text-[9.7px] leading-[12.8px]" : "mt-1.5 text-[13px] leading-[18px]",
           ].join(" ")}
         >
           {[entry.company, entry.location].filter(Boolean).join(" - ")}
         </p>
-        <p className={compact ? "text-[10.5px] leading-[14px]" : "text-[14px] leading-5"}>
+        <p className={compact ? "text-[9.7px] leading-[12.8px]" : "text-[13px] leading-[18px]"}>
           {[entry.startDate, entry.current ? "Present" : entry.endDate]
             .filter(Boolean)
             .join(" - ")}
         </p>
-        <div className={compact ? "mt-0.5" : "mt-2"}>
-          <BulletList compact={compact} items={entry.bullets.map((bullet) => bullet.text)} />
+        <div className={compact ? "mt-0.5" : "mt-1.5"}>
+          <BulletList
+            compact={compact}
+            dense={!compact}
+            items={entry.bullets.map((bullet) => bullet.text)}
+          />
         </div>
       </article>
     ))}
@@ -223,13 +233,13 @@ const LanguagesBlock = ({
     name.trim().toLowerCase() === "frnch" ? "French" : name;
 
   return (
-    <div className={compact ? "space-y-1" : "space-y-2"}>
+    <div className={compact ? "space-y-0.5" : "space-y-2"}>
       {entries.map((entry) => (
         <div
           key={entry.id}
           className={[
             "flex items-baseline justify-between gap-4",
-            compact ? "text-[10.5px] leading-[14px]" : "text-[13px] leading-5",
+            compact ? "text-[9.8px] leading-[12.8px]" : "text-[13px] leading-5",
             light ? "text-white" : "text-ink",
           ].join(" ")}
         >
@@ -270,25 +280,32 @@ const CertificationsBlock = ({
   return (
     <div
       className={
-        columns ? "grid grid-cols-2 gap-2" : compact ? "space-y-2" : "space-y-4"
+        columns
+          ? "grid grid-cols-2 gap-x-2 gap-y-1.5"
+          : compact
+            ? "space-y-1.5"
+            : "space-y-4"
       }
     >
       {entries.map((entry) => (
         <article
           key={entry.id}
-          className="rounded-md border-l-4 border-evergreen bg-[#f4f6f1] py-1.5 pl-3 pr-2"
+          className={[
+            "rounded-md border-l-4 border-evergreen bg-[#f4f6f1]",
+            compact ? "py-1 pl-2.5 pr-1.5" : "py-1.5 pl-3 pr-2",
+          ].join(" ")}
         >
           <h3
             className={[
               "font-black uppercase tracking-[0.12em]",
-              compact ? "text-[9.5px] leading-[13px]" : "text-[13px] leading-5",
+              compact ? "text-[8.9px] leading-[11.8px]" : "text-[13px] leading-5",
             ].join(" ")}
           >
             {normalizeCertificationTitle(entry.title)}
           </h3>
           <p
             className={
-              compact ? "mt-0.5 text-[10.5px] leading-[14px]" : "mt-1 text-[14px] leading-5"
+              compact ? "mt-0.5 text-[9.4px] leading-[12px]" : "mt-1 text-[14px] leading-5"
             }
           >
             {formatCertificationMeta(entry)}
@@ -297,7 +314,7 @@ const CertificationsBlock = ({
             <p
               className={
                 compact
-                  ? "mt-0.5 text-[9.5px] leading-[13px] text-slate-600"
+                  ? "mt-0.5 text-[8.9px] leading-[11.8px] text-slate-600"
                   : "mt-1 text-[12px] leading-[18px] text-slate-600"
               }
             >
@@ -462,14 +479,10 @@ const ContinuationPageView = ({
 
   return (
     <article className="cv-page flex">
-      <aside className="relative w-[64px] shrink-0 bg-charcoal">
-        <div className="absolute bottom-[238px] left-[22px]">
-          <DotGrid light />
-        </div>
-      </aside>
+      <aside className="relative w-[64px] shrink-0 bg-charcoal" />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-[96px] shrink-0 items-end justify-between bg-evergreen px-11 pb-6 text-white">
+        <header className="flex h-[88px] shrink-0 items-end justify-between bg-evergreen px-11 pb-5 text-white">
           <div className="min-w-0">
             <h1 className="text-[26px] font-black uppercase leading-7 tracking-[0.08em]">
               {page.personal.fullName || "Your Name"}
@@ -481,12 +494,12 @@ const ContinuationPageView = ({
           <p className="text-xs font-bold uppercase tracking-[0.2em]">Page 2</p>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-hidden px-11 pb-[120px] pt-[30px]">
-          <div className="space-y-4">
+        <main className="min-h-0 flex-1 overflow-hidden px-11 pb-[64px] pt-[24px]">
+          <div className="flex min-h-full flex-col gap-2.5">
             {experience ? (
               <section className="break-inside-avoid">
                 <SectionTitle compact>{labels.experienceContinued}</SectionTitle>
-                <div className="mt-2.5">
+                <div className="mt-1.5">
                   <ExperienceBlock entries={experience.entries} compact />
                 </div>
               </section>
@@ -495,35 +508,44 @@ const ContinuationPageView = ({
             {certifications ? (
               <section className="break-inside-avoid">
                 <SectionTitle compact>{labels.certifications}</SectionTitle>
-                <div className="mt-2.5">
+                <div className="mt-1.5">
                   <CertificationsBlock entries={certifications.entries} compact columns />
                 </div>
               </section>
             ) : null}
 
-            <div className="grid grid-cols-[1.25fr_0.85fr] gap-7">
-              {education ? (
+            {education ? (
+              <div className="grid grid-cols-[1.25fr_0.85fr] gap-5">
                 <section className="break-inside-avoid">
                   <SectionTitle compact>{labels.education}</SectionTitle>
-                  <div className="mt-2.5">
+                  <div className="mt-1.5">
                     <EducationBlock entries={education.entries} light={false} compact />
                   </div>
                 </section>
-              ) : null}
-              {languages ? (
-                <section className="break-inside-avoid">
-                  <SectionTitle compact>{labels.languages}</SectionTitle>
-                  <div className="mt-2.5">
-                    <LanguagesBlock entries={languages.entries} light={false} compact />
-                  </div>
-                </section>
-              ) : null}
-            </div>
+                {languages ? (
+                  <section className="break-inside-avoid">
+                    <SectionTitle compact>{labels.languages}</SectionTitle>
+                    <div className="mt-1.5">
+                      <LanguagesBlock entries={languages.entries} light={false} compact />
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            ) : null}
+
+            {!education && languages ? (
+              <section className="mt-4 w-[250px] break-inside-avoid">
+                <SectionTitle compact>{labels.languages}</SectionTitle>
+                <div className="mt-1.5">
+                  <LanguagesBlock entries={languages.entries} light={false} compact />
+                </div>
+              </section>
+            ) : null}
 
             {skills ? (
               <section className="break-inside-avoid">
                 <SectionTitle compact>{labels.skills}</SectionTitle>
-                <div className="mt-3 grid grid-cols-2 gap-x-6">
+                <div className="mt-2 grid grid-cols-2 gap-x-5">
                   <SkillsBlock entries={skills.entries} light={false} compact />
                 </div>
               </section>
@@ -532,7 +554,7 @@ const ContinuationPageView = ({
         </main>
       </div>
 
-      <div className="pointer-events-none absolute -bottom-[94px] -right-[92px] h-[190px] w-[190px] rounded-full bg-evergreen" />
+      <div className="pointer-events-none absolute -bottom-[108px] -right-[84px] h-[154px] w-[154px] rounded-full bg-evergreen" />
     </article>
   );
 };
