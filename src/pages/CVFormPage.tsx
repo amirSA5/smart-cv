@@ -3,6 +3,7 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import CVEditor from "../components/CVEditor";
 import CVPreview from "../components/CVPreview";
+import DesignSettingsPanel from "../components/DesignSettingsPanel";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import { getTemplateMeta, isTemplateId } from "../constants/templates";
 import {
@@ -13,6 +14,7 @@ import {
   updateCvClientVersion,
 } from "../services/cvClientService";
 import type { CVData, CVLanguage, CvClient } from "../types/cv";
+import { isPhotoSplitProfessionalTooLong } from "../templates/photo-split-professional/photoSplitProfessionalPagination";
 import { isYellowProfessionalTimelineTooLong } from "../templates/yellow-professional-timeline/yellowProfessionalTimelinePagination";
 import {
   createNewCvData,
@@ -54,9 +56,12 @@ const CVFormPage = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const watchedCv = useWatch({ control: methods.control }) as CVData;
-  const yellowTemplateTooLong =
-    selectedTemplate.id === "yellow-professional-timeline" &&
-    isYellowProfessionalTimelineTooLong(watchedCv);
+  const selectedTemplateTooLong =
+    selectedTemplate.id === "yellow-professional-timeline"
+      ? isYellowProfessionalTimelineTooLong(watchedCv)
+      : selectedTemplate.id === "photo-split-professional"
+        ? isPhotoSplitProfessionalTooLong(watchedCv)
+        : false;
 
   useEffect(() => {
     if (!id) {
@@ -283,7 +288,7 @@ const CVFormPage = () => {
                   {error}
                 </p>
               ) : null}
-              {yellowTemplateTooLong ? (
+              {selectedTemplateTooLong ? (
                 <p className="mt-4 rounded-md border border-yellow-400 bg-yellow-50 px-3 py-2 text-sm font-black text-neutral-800">
                   This CV content is too long for the selected template. Please
                   shorten some sections to keep it within 2 pages.
@@ -296,7 +301,12 @@ const CVFormPage = () => {
                 Loading CV client...
               </div>
             ) : (
-              <CVEditor />
+              <>
+                {selectedTemplate.id === "photo-split-professional" ? (
+                  <DesignSettingsPanel />
+                ) : null}
+                <CVEditor />
+              </>
             )}
           </div>
         </section>

@@ -90,6 +90,17 @@ export const defaultCv: CVData = {
     },
   ],
   references: [],
+  strengths: [],
+  interests: [],
+  templateSettings: {
+    accentColor: "#000000",
+    secondaryColor: "#6C63FF",
+    fontFamily: "Montserrat",
+    fontSizeScale: 1,
+    styleVariant: "classic",
+    borderStyle: "thin",
+    photoStyle: "rectangle",
+  },
 };
 
 export const emptyCv: CVData = {
@@ -111,4 +122,15 @@ export const emptyCv: CVData = {
   certifications: [],
   achievements: [],
   references: [],
+  strengths: [],
+  interests: [],
+  templateSettings: {
+    accentColor: "#000000",
+    secondaryColor: "#6C63FF",
+    fontFamily: "Montserrat",
+    fontSizeScale: 1,
+    styleVariant: "classic",
+    borderStyle: "thin",
+    photoStyle: "rectangle",
+  },
 };

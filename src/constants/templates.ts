@@ -16,6 +16,11 @@ export const templates: Record<CVTemplateId, CVTemplateMeta> = {
     name: "Yellow Professional Timeline Template",
     color: "#f4c430",
   },
+  "photo-split-professional": {
+    id: "photo-split-professional",
+    name: "Photo Split Professional",
+    color: "#111111",
+  },
 };
 
 export const templateOptions = Object.values(templates);
@@ -27,7 +32,8 @@ export const isTemplateId = (
 ): value is CVTemplateId =>
   value === "modern-sidebar" ||
   value === "tech-professional" ||
-  value === "yellow-professional-timeline";
+  value === "yellow-professional-timeline" ||
+  value === "photo-split-professional";
 
 export const getTemplateMeta = (
   template?: Partial<CVTemplateMeta> | null,
@@ -38,6 +44,8 @@ export const getTemplateMeta = (
       ? "yellow-professional-timeline"
     : template?.name === "tech-professional"
       ? "tech-professional"
+    : template?.name === "photo-split-professional"
+      ? "photo-split-professional"
       : "modern-sidebar";
   const fallback = templates[id];
   const customName =

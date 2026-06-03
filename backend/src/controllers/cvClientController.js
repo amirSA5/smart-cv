@@ -20,6 +20,11 @@ const templateCatalog = {
     name: "Yellow Professional Timeline Template",
     color: "#f4c430",
   },
+  "photo-split-professional": {
+    id: "photo-split-professional",
+    name: "Photo Split Professional",
+    color: "#111111",
+  },
 };
 const versionArrayFields = [
   "skills",
@@ -30,6 +35,8 @@ const versionArrayFields = [
   "languages",
   "achievements",
   "references",
+  "strengths",
+  "interests",
 ];
 const sharedFields = [
   "fullName",
@@ -40,7 +47,22 @@ const sharedFields = [
   "website",
   "photoUrl",
   "template",
+  "templateSettings",
 ];
+
+const defaultTemplateSettings = {
+  accentColor: "#000000",
+  secondaryColor: "#6C63FF",
+  fontFamily: "Montserrat",
+  fontSizeScale: 1,
+  styleVariant: "classic",
+  borderStyle: "thin",
+  photoStyle: "rectangle",
+};
+const styleVariants = ["classic", "modern", "minimal", "elegant"];
+const borderStyles = ["none", "thin", "colored", "rounded"];
+const photoStyles = ["rectangle", "rounded", "circle"];
+const fontSizeScales = [0.9, 1, 1.1, 1.2];
 
 const sendServerError = (response, error) =>
   response.status(500).json({
@@ -121,6 +143,8 @@ const normalizeVersion = (version, lang) => ({
     ? version.achievements
     : [],
   references: Array.isArray(version?.references) ? version.references : [],
+  strengths: Array.isArray(version?.strengths) ? version.strengths : [],
+  interests: Array.isArray(version?.interests) ? version.interests : [],
 });
 
 const normalizeTemplate = (template) => {
@@ -131,6 +155,9 @@ const normalizeTemplate = (template) => {
       ? "yellow-professional-timeline"
       : undefined) ??
     (legacyName === "tech-professional" ? "tech-professional" : undefined) ??
+    (legacyName === "photo-split-professional"
+      ? "photo-split-professional"
+      : undefined) ??
     (legacyName === "modern-sidebar" ? "modern-sidebar" : undefined);
   const id =
     requestedId && templateCatalog[requestedId]
@@ -144,6 +171,32 @@ const normalizeTemplate = (template) => {
       ? template.name
       : defaults.name,
     color: template?.color ?? defaults.color,
+  };
+};
+
+const normalizeTemplateSettings = (settings = {}) => {
+  const source =
+    settings && typeof settings === "object" && !Array.isArray(settings)
+      ? settings
+      : {};
+
+  return {
+    accentColor: source.accentColor ?? defaultTemplateSettings.accentColor,
+    secondaryColor:
+      source.secondaryColor ?? defaultTemplateSettings.secondaryColor,
+    fontFamily: source.fontFamily ?? defaultTemplateSettings.fontFamily,
+    fontSizeScale: fontSizeScales.includes(Number(source.fontSizeScale))
+      ? Number(source.fontSizeScale)
+      : defaultTemplateSettings.fontSizeScale,
+    styleVariant: styleVariants.includes(source.styleVariant)
+      ? source.styleVariant
+      : defaultTemplateSettings.styleVariant,
+    borderStyle: borderStyles.includes(source.borderStyle)
+      ? source.borderStyle
+      : defaultTemplateSettings.borderStyle,
+    photoStyle: photoStyles.includes(source.photoStyle)
+      ? source.photoStyle
+      : defaultTemplateSettings.photoStyle,
   };
 };
 
@@ -170,7 +223,9 @@ const normalizeVersions = (body) => {
     body.certifications ||
     body.languages ||
     body.achievements ||
-    body.references;
+    body.references ||
+    body.strengths ||
+    body.interests;
 
   if (!legacyHasCvContent) {
     return versions;
@@ -189,6 +244,8 @@ const normalizeVersions = (body) => {
         languages: body.languages,
         achievements: body.achievements,
         references: body.references,
+        strengths: body.strengths,
+        interests: body.interests,
       },
       "en",
     ),
@@ -208,6 +265,7 @@ const normalizeClientPayload = (body) => {
     photoUrl: body.photoUrl ?? "",
     versions,
     template: normalizeTemplate(body.template),
+    templateSettings: normalizeTemplateSettings(body.templateSettings),
   };
 };
 
@@ -290,6 +348,7 @@ const applySharedFields = (client, body) => {
   }
 
   client.template = normalizeTemplate(client.template);
+  client.templateSettings = normalizeTemplateSettings(client.templateSettings);
 };
 
 export const getAllCvClients = async (_request, response) => {

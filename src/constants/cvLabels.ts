@@ -130,3 +130,65 @@ export const yellowProfessionalTimelineLabels: Record<
 
 export type YellowProfessionalTimelineLabelSet =
   (typeof yellowProfessionalTimelineLabels)[CVLanguage];
+
+export const photoSplitProfessionalLabels: Record<
+  CVLanguage,
+  {
+    profile: string;
+    skills: string;
+    skillsContinued: string;
+    certifications: string;
+    certificationsContinued: string;
+    achievements: string;
+    strengths: string;
+    strengthsContinued: string;
+    interests: string;
+    experience: string;
+    experienceContinued: string;
+    education: string;
+    educationContinued: string;
+    languages: string;
+    references: string;
+    page2: string;
+  }
+> = {
+  en: {
+    profile: "PROFILE",
+    skills: "MY SKILLS",
+    skillsContinued: "MY SKILLS CONTINUED",
+    certifications: "CERTIFICATES",
+    certificationsContinued: "CERTIFICATES CONTINUED",
+    achievements: "AWARDS",
+    strengths: "STRENGTHS",
+    strengthsContinued: "STRENGTHS",
+    interests: "INTERESTS",
+    experience: "WORK EXPERIENCE",
+    experienceContinued: "WORK EXPERIENCE CONTINUED",
+    education: "EDUCATION",
+    educationContinued: "EDUCATION CONTINUED",
+    languages: "LANGUAGES",
+    references: "REFERENCES",
+    page2: "PAGE 2",
+  },
+  fr: {
+    profile: "PROFIL",
+    skills: "MES COMPÉTENCES",
+    skillsContinued: "MES COMPÉTENCES SUITE",
+    certifications: "CERTIFICATS",
+    certificationsContinued: "CERTIFICATS SUITE",
+    achievements: "RÉCOMPENSES",
+    strengths: "ATOUTS",
+    strengthsContinued: "ATOUTS",
+    interests: "CENTRE D’INTÉRÊT",
+    experience: "EXPÉRIENCE PROFESSIONNELLE",
+    experienceContinued: "EXPÉRIENCE PROFESSIONNELLE SUITE",
+    education: "FORMATION",
+    educationContinued: "FORMATION SUITE",
+    languages: "LANGUES",
+    references: "RÉFÉRENCES",
+    page2: "PAGE 2",
+  },
+};
+
+export type PhotoSplitProfessionalLabelSet =
+  (typeof photoSplitProfessionalLabels)[CVLanguage];

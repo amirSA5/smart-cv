@@ -8,6 +8,7 @@ import type {
   CvLanguageVersion,
   CvSharedClientPayload,
   CVTemplateMeta,
+  TemplateSettings,
 } from "../types/cv";
 
 export const fallbackLanguage: CVLanguage = "en";
@@ -21,6 +22,63 @@ export const languageCodeLabels: Record<CVLanguage, string> = {
   en: "EN",
   fr: "FR",
 };
+
+export const defaultTemplateSettings: TemplateSettings = {
+  accentColor: "#000000",
+  secondaryColor: "#6C63FF",
+  fontFamily: "Montserrat",
+  fontSizeScale: 1,
+  styleVariant: "classic",
+  borderStyle: "thin",
+  photoStyle: "rectangle",
+};
+
+const fontSizeScales: TemplateSettings["fontSizeScale"][] = [0.9, 1, 1.1, 1.2];
+
+const styleVariants: TemplateSettings["styleVariant"][] = [
+  "classic",
+  "modern",
+  "minimal",
+  "elegant",
+];
+
+const borderStyles: TemplateSettings["borderStyle"][] = [
+  "none",
+  "thin",
+  "colored",
+  "rounded",
+];
+
+const photoStyles: TemplateSettings["photoStyle"][] = [
+  "rectangle",
+  "rounded",
+  "circle",
+];
+
+export const normalizeTemplateSettings = (
+  settings?: Partial<TemplateSettings>,
+): TemplateSettings => ({
+  accentColor: settings?.accentColor || defaultTemplateSettings.accentColor,
+  secondaryColor:
+    settings?.secondaryColor || defaultTemplateSettings.secondaryColor,
+  fontFamily: settings?.fontFamily || defaultTemplateSettings.fontFamily,
+  fontSizeScale:
+    settings?.fontSizeScale && fontSizeScales.includes(settings.fontSizeScale)
+      ? settings.fontSizeScale
+      : defaultTemplateSettings.fontSizeScale,
+  styleVariant:
+    settings?.styleVariant && styleVariants.includes(settings.styleVariant)
+      ? settings.styleVariant
+      : defaultTemplateSettings.styleVariant,
+  borderStyle:
+    settings?.borderStyle && borderStyles.includes(settings.borderStyle)
+      ? settings.borderStyle
+      : defaultTemplateSettings.borderStyle,
+  photoStyle:
+    settings?.photoStyle && photoStyles.includes(settings.photoStyle)
+      ? settings.photoStyle
+      : defaultTemplateSettings.photoStyle,
+});
 
 export const isCvLanguage = (value: string | null): value is CVLanguage =>
   value === "en" || value === "fr";
@@ -108,6 +166,7 @@ export const cvDataToSharedClientPayload = (
   website: data.personal.website.trim(),
   photoUrl: data.personal.profileImage?.trim() ?? "",
   template: getTemplateMeta(template),
+  templateSettings: normalizeTemplateSettings(data.templateSettings),
 });
 
 export const cvDataToClientVersion = (
@@ -164,6 +223,13 @@ export const cvDataToClientVersion = (
     phone: entry.phone.trim(),
     email: entry.email.trim(),
   })),
+  strengths: (data.strengths ?? []).map((entry) => ({
+    title: entry.title.trim(),
+    description: entry.description.trim(),
+  })),
+  interests: (data.interests ?? []).map((entry) => ({
+    name: entry.name.trim(),
+  })),
 });
 
 export const cvDataToClientPayload = (
@@ -189,6 +255,8 @@ const emptyVersion = (language: CVLanguage): CvLanguageVersion => ({
   languages: [],
   achievements: [],
   references: [],
+  strengths: [],
+  interests: [],
 });
 
 export const cvClientToCvData = (
@@ -207,6 +275,7 @@ export const cvClientToCvData = (
       location: client.location ?? "",
       profileImage: client.photoUrl ?? "",
     },
+    templateSettings: normalizeTemplateSettings(client.templateSettings),
     profileSummary: version.profile ?? "",
     skills:
       version.skills?.map((skill) => versionSkillToFormSkill(skill, "skill")) ??
@@ -277,6 +346,17 @@ export const cvClientToCvData = (
         phone: entry.phone ?? "",
         email: entry.email ?? "",
       })) ?? [],
+    strengths:
+      version.strengths?.map((entry) => ({
+        id: createId("strength"),
+        title: entry.title ?? "",
+        description: entry.description ?? "",
+      })) ?? [],
+    interests:
+      version.interests?.map((entry) => ({
+        id: createId("interest"),
+        name: entry.name ?? "",
+      })) ?? [],
   };
 };
 
@@ -292,4 +372,5 @@ export const createNewCvData = (): CVData => ({
     location: "",
     profileImage: "",
   },
+  templateSettings: { ...defaultTemplateSettings },
 });

@@ -75,6 +75,50 @@ const referenceSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const strengthSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
+const interestSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
+const templateSettingsSchema = new mongoose.Schema(
+  {
+    accentColor: { type: String, default: "#000000" },
+    secondaryColor: { type: String, default: "#6C63FF" },
+    fontFamily: { type: String, default: "Montserrat" },
+    fontSizeScale: {
+      type: Number,
+      enum: [0.9, 1, 1.1, 1.2],
+      default: 1,
+    },
+    styleVariant: {
+      type: String,
+      enum: ["classic", "modern", "minimal", "elegant"],
+      default: "classic",
+    },
+    borderStyle: {
+      type: String,
+      enum: ["none", "thin", "colored", "rounded"],
+      default: "thin",
+    },
+    photoStyle: {
+      type: String,
+      enum: ["rectangle", "rounded", "circle"],
+      default: "rectangle",
+    },
+  },
+  { _id: false },
+);
+
 const cvVersionSchema = new mongoose.Schema(
   {
     language: {
@@ -92,6 +136,8 @@ const cvVersionSchema = new mongoose.Schema(
     languages: { type: [languageSchema], default: [] },
     achievements: { type: [achievementSchema], default: [] },
     references: { type: [referenceSchema], default: [] },
+    strengths: { type: [strengthSchema], default: [] },
+    interests: { type: [interestSchema], default: [] },
   },
   { _id: false },
 );
@@ -130,12 +176,14 @@ const cvClientSchema = new mongoose.Schema(
           "modern-sidebar",
           "tech-professional",
           "yellow-professional-timeline",
+          "photo-split-professional",
         ],
         default: "modern-sidebar",
       },
       name: { type: String, default: "Modern Sidebar" },
       color: { type: String, default: "#2f574d" },
     },
+    templateSettings: { type: templateSettingsSchema, default: () => ({}) },
   },
   { timestamps: true },
 );

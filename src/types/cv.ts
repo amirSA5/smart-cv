@@ -74,10 +74,32 @@ export type ReferenceEntry = {
   email: string;
 };
 
+export type StrengthEntry = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type InterestEntry = {
+  id: string;
+  name: string;
+};
+
+export type TemplateSettings = {
+  accentColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  fontSizeScale: 0.9 | 1 | 1.1 | 1.2;
+  styleVariant: "classic" | "modern" | "minimal" | "elegant";
+  borderStyle: "none" | "thin" | "colored" | "rounded";
+  photoStyle: "rectangle" | "rounded" | "circle";
+};
+
 export type CVTemplateId =
   | "modern-sidebar"
   | "tech-professional"
-  | "yellow-professional-timeline";
+  | "yellow-professional-timeline"
+  | "photo-split-professional";
 
 export type CVTemplateMeta = {
   id: CVTemplateId;
@@ -96,6 +118,9 @@ export type CVData = {
   certifications: CertificationEntry[];
   achievements: AchievementEntry[];
   references: ReferenceEntry[];
+  strengths: StrengthEntry[];
+  interests: InterestEntry[];
+  templateSettings: TemplateSettings;
 };
 
 export type CVLanguage = "en" | "fr";
@@ -156,6 +181,13 @@ export type CvLanguageVersion = {
     phone: string;
     email: string;
   }[];
+  strengths: {
+    title: string;
+    description: string;
+  }[];
+  interests: {
+    name: string;
+  }[];
 };
 
 export type CvSharedClientPayload = {
@@ -167,6 +199,7 @@ export type CvSharedClientPayload = {
   website: string;
   photoUrl: string;
   template: CVTemplateMeta;
+  templateSettings: TemplateSettings;
 };
 
 export type CvClientPayload = CvSharedClientPayload & {

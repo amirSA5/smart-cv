@@ -8,6 +8,8 @@ import {
 } from "react";
 import { getTemplateMeta } from "../constants/templates";
 import { renderModernSidebarPages } from "../templates/modern-sidebar/ModernSidebarTemplate";
+import { renderPhotoSplitProfessionalPages } from "../templates/photo-split-professional/PhotoSplitProfessionalTemplate";
+import { isPhotoSplitProfessionalTooLong } from "../templates/photo-split-professional/photoSplitProfessionalPagination";
 import { renderTechProfessionalPages } from "../templates/tech-professional/TechProfessionalTemplate";
 import { renderYellowProfessionalTimelinePages } from "../templates/yellow-professional-timeline/YellowProfessionalTimelineTemplate";
 import { isYellowProfessionalTimelineTooLong } from "../templates/yellow-professional-timeline/yellowProfessionalTimelinePagination";
@@ -29,7 +31,9 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(
     const selectedTemplate = getTemplateMeta(template);
     const pages = useMemo(
       () =>
-        selectedTemplate.id === "yellow-professional-timeline"
+        selectedTemplate.id === "photo-split-professional"
+          ? renderPhotoSplitProfessionalPages(data, language)
+          : selectedTemplate.id === "yellow-professional-timeline"
           ? renderYellowProfessionalTimelinePages(data, language)
           : selectedTemplate.id === "tech-professional"
             ? renderTechProfessionalPages(data, language)
@@ -37,8 +41,11 @@ const CVPreview = forwardRef<HTMLDivElement, CVPreviewProps>(
       [data, language, selectedTemplate.id],
     );
     const isTooLong =
-      selectedTemplate.id === "yellow-professional-timeline" &&
-      isYellowProfessionalTimelineTooLong(data);
+      selectedTemplate.id === "yellow-professional-timeline"
+        ? isYellowProfessionalTimelineTooLong(data)
+        : selectedTemplate.id === "photo-split-professional"
+          ? isPhotoSplitProfessionalTooLong(data)
+          : false;
     const viewportRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [scale, setScale] = useState(1);
