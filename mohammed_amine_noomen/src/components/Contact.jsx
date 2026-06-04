@@ -1,4 +1,4 @@
-import { Linkedin, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Globe, Linkedin, Mail, MapPin, Phone, Send } from "lucide-react";
 import { profile } from "../data/profileData.js";
 import Reveal from "./Reveal.jsx";
 
@@ -28,6 +28,10 @@ function Contact() {
             <a href={profile.contact.linkedinUrl} target="_blank" rel="noreferrer">
               <Linkedin size={20} />
               <span>{profile.contact.linkedin}</span>
+            </a>
+            <a href={profile.contact.websiteUrl} target="_blank" rel="noreferrer">
+              <Globe size={20} />
+              <span>{profile.contact.website}</span>
             </a>
             <span>
               <MapPin size={20} />

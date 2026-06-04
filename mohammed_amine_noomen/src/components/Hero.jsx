@@ -2,6 +2,7 @@ import {
   ArrowDown,
   Download,
   Factory,
+  Globe,
   Linkedin,
   Mail,
   PackageCheck,
@@ -54,6 +55,10 @@ function Hero() {
               <Mail size={16} />
               {profile.contact.email}
             </span>
+            <a href={profile.contact.websiteUrl} target="_blank" rel="noreferrer">
+              <Globe size={16} />
+              {profile.contact.website}
+            </a>
           </div>
         </Reveal>
 

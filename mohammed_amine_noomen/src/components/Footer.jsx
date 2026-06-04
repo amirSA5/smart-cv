@@ -1,4 +1,4 @@
-import { Download, Linkedin } from "lucide-react";
+import { Download, Globe, Linkedin } from "lucide-react";
 import { profile } from "../data/profileData.js";
 
 function Footer() {
@@ -14,6 +14,10 @@ function Footer() {
           <a href={profile.contact.linkedinUrl} target="_blank" rel="noreferrer">
             <Linkedin size={17} />
             LinkedIn
+          </a>
+          <a href={profile.contact.websiteUrl} target="_blank" rel="noreferrer">
+            <Globe size={17} />
+            Site
           </a>
         </div>
       </div>

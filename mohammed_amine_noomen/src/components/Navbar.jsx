@@ -13,6 +13,16 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 960) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const closeMenu = () => setOpen(false);
 
   return (
@@ -29,6 +39,7 @@ function Navbar() {
         <button
           className="nav-toggle"
           type="button"
+          aria-controls="primary-navigation"
           aria-expanded={open}
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           onClick={() => setOpen((value) => !value)}
@@ -36,7 +47,7 @@ function Navbar() {
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        <div className={`nav-links ${open ? "is-open" : ""}`}>
+        <div id="primary-navigation" className={`nav-links ${open ? "is-open" : ""}`}>
           {navItems.map((item) => (
             <a key={item.href} href={item.href} onClick={closeMenu}>
               {item.label}
