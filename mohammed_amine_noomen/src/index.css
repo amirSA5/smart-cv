@@ -48,6 +48,10 @@ textarea {
   font: inherit;
 }
 
+main {
+  padding-top: 76px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -221,8 +225,10 @@ h3 {
 }
 
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  right: 0;
+  left: 0;
   z-index: 50;
   background: rgba(8, 17, 31, 0.78);
   border-bottom: 1px solid transparent;
@@ -1140,6 +1146,10 @@ h3 {
 }
 
 @media (max-width: 960px) {
+  main {
+    padding-top: 68px;
+  }
+
   .navbar {
     min-height: 68px;
   }
