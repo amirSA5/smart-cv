@@ -4,6 +4,7 @@ export const profile = {
   tagline:
     "Profil achats orienté plasturgie, suivi fournisseurs et optimisation des flux pour des environnements industriels exigeants.",
   cvUrl: "/cv-mohamed-amine-noomen.pdf",
+  motivationLetterUrl: "/lettre-motivation-mohamed-amine-noomen.pdf",
   photoUrl: "/profile-mohamed-amine-noomen.jpg",
   summary:
     "Assistant achats industriels orienté plasturgie et approvisionnement, avec une expérience dans le suivi du cycle de commande, la gestion fournisseurs, la négociation, l’approvisionnement en matières premières, le suivi des pièces industrielles et la coordination avec les équipes entrepôt. Habitué à travailler sur des achats techniques et opérationnels, il assure un suivi rigoureux des livraisons, optimise les coûts et contribue à la fluidité des flux logistiques.",

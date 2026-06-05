@@ -2,6 +2,7 @@ import {
   ArrowDown,
   Download,
   Factory,
+  FileText,
   Globe,
   Linkedin,
   Mail,
@@ -30,6 +31,10 @@ function Hero() {
             <a className="btn btn-primary" href={profile.cvUrl} download>
               <Download size={18} />
               Télécharger le CV
+            </a>
+            <a className="btn btn-secondary" href={profile.motivationLetterUrl} download>
+              <FileText size={18} />
+              Télécharger la lettre
             </a>
             <a className="btn btn-secondary" href="#contact">
               <Mail size={18} />

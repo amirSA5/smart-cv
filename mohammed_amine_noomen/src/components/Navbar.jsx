@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Menu, X } from "lucide-react";
+import { Download, FileText, Menu, X } from "lucide-react";
 import { navItems, profile } from "../data/profileData.js";
 
 function Navbar() {
@@ -15,7 +15,7 @@ function Navbar() {
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth > 960) {
+      if (window.innerWidth > 1080) {
         setOpen(false);
       }
     };
@@ -56,6 +56,10 @@ function Navbar() {
           <a className="nav-download" href={profile.cvUrl} download onClick={closeMenu}>
             <Download size={17} />
             CV
+          </a>
+          <a className="nav-download" href={profile.motivationLetterUrl} download onClick={closeMenu}>
+            <FileText size={17} />
+            Lettre
           </a>
         </div>
       </nav>

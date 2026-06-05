@@ -1,4 +1,4 @@
-import { Download, Globe, Linkedin } from "lucide-react";
+import { Download, FileText, Globe, Linkedin } from "lucide-react";
 import { profile } from "../data/profileData.js";
 
 function Footer() {
@@ -10,6 +10,10 @@ function Footer() {
           <a href={profile.cvUrl} download>
             <Download size={17} />
             CV
+          </a>
+          <a href={profile.motivationLetterUrl} download>
+            <FileText size={17} />
+            Lettre
           </a>
           <a href={profile.contact.linkedinUrl} target="_blank" rel="noreferrer">
             <Linkedin size={17} />
